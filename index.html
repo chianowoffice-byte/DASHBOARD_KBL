@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BIDV Tràng Tiền – Dashboard Cán Bộ Bán Lẻ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --teal:#00736B;--teal-d:#004D46;--teal-l:#E8F5F4;--teal-m:#B2D8D5;
+  --gold:#C8A951;--gold-l:#FDF6E0;
+  --ld:#1B5E54;--cb:#2E7D72;
+  --green:#2E7D32;--green-l:#E8F5E9;
+  --red:#C62828;--red-l:#FFEBEE;
+  --orange:#E65100;--blue:#1565C0;
+  --text:#1A2B2A;--gray:#607D8B;--border:#B2D8D5;
+  --alt:#F2F9F8;--white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#EEF2F1;color:var(--text);font-size:13px}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,var(--teal-d),var(--teal) 55%,#009688);
+  color:#fff;padding:16px 28px;display:flex;align-items:center;gap:16px;
+  box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.hdr-logo{width:54px;height:54px;background:#fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:900;color:var(--teal);letter-spacing:-1px;
+  border:2.5px solid var(--gold);flex-shrink:0}
+.hdr h1{font-size:17px;font-weight:900}
+.hdr p{font-size:11px;opacity:.75;margin-top:3px}
+.hdr-badge{margin-left:auto;background:var(--gold);color:var(--teal-d);
+  padding:5px 14px;border-radius:20px;font-weight:700;font-size:11px;white-space:nowrap}
+.data-badge{margin-left:10px;font-size:10px;padding:3px 10px;border-radius:10px;font-weight:700}
+.badge-live{background:#E8F5E9;color:#1B5E20}
+.badge-import{background:#E3F2FD;color:#0D47A1}
+
+/* ── TABS ── */
+.tabs{background:#fff;border-bottom:3px solid var(--teal);display:flex;padding:0 16px;overflow-x:auto;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.tab{padding:11px 18px;cursor:pointer;font-weight:600;font-size:12px;color:var(--gray);
+  border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--teal)}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);background:var(--teal-l)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── CONTENT ── */
+.content{padding:18px 22px;max-width:1600px;margin:0 auto}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border-radius:10px;padding:12px 15px;border-left:4px solid var(--teal);
+  box-shadow:0 2px 6px rgba(0,115,107,.08);transition:transform .15s}
+.kpi:hover{transform:translateY(-2px)}
+.kpi.gold{border-left-color:var(--gold)}.kpi.green{border-left-color:var(--green)}
+.kpi.orange{border-left-color:var(--orange)}.kpi.blue{border-left-color:var(--blue)}
+.kpi-lbl{font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi-val{font-size:22px;font-weight:900;color:var(--teal);margin-top:4px;line-height:1}
+.kpi.gold .kpi-val{color:#7A6018}.kpi.green .kpi-val{color:var(--green)}
+.kpi.orange .kpi-val{color:var(--orange)}.kpi.blue .kpi-val{color:var(--blue)}
+.kpi-sub{font-size:10px;color:var(--gray);margin-top:3px}
+
+/* ── BENCHMARK BAR ── */
+.bench-strip{background:#fff;border:0.5px solid var(--border);border-radius:8px;padding:10px 14px;
+  margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bench-label{font-size:11px;font-weight:700;color:var(--gray);white-space:nowrap}
+.bench-toggle{display:flex;gap:6px}
+.bench-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);font-size:11px;
+  font-weight:600;cursor:pointer;background:#fff;color:var(--gray);transition:all .15s}
+.bench-btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.bench-info{margin-left:auto;font-size:11px;color:var(--gray)}
+.bench-info span{font-weight:700;color:var(--teal)}
+
+/* ── SECTION TITLE ── */
+.sec-title{background:var(--teal);color:#fff;padding:9px 14px;border-radius:8px 8px 0 0;
+  font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px}
+.sec-title.ld{background:var(--ld)}.sec-title.cb{background:var(--cb)}
+.sec-title.green{background:var(--green)}.sec-title.import{background:#1565C0}
+
+/* ── TABLE ── */
+.tbl-wrap{background:#fff;border-radius:0 0 8px 8px;overflow:auto;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:18px}
+table{width:100%;border-collapse:collapse;min-width:860px}
+thead th{background:var(--teal);color:#fff;padding:9px 11px;font-size:11px;font-weight:700;
+  text-align:center;border-right:1px solid rgba(255,255,255,.15);position:sticky;top:0;z-index:2;white-space:nowrap}
+thead th.ld-th{background:var(--ld)}thead th.cb-th{background:var(--cb)}
+thead th.bench-th{background:#BF360C;font-size:10px}
+thead th.bench-ld-th{background:#1A237E;font-size:10px}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:hover{background:#DFF5F3!important}
+tbody td{padding:8px 11px;font-size:12px}
+.ph-row td{background:var(--teal-d)!important;color:#fff!important;font-weight:700;padding:7px 13px;font-size:12px;border:none}
+.ph-row.ld td{background:var(--ld)!important}.ph-row.cb td{background:var(--cb)!important}
+.row-ld{background:#EBF8F7}.row-alt{background:var(--alt)}.row-even{background:#fff}
+.avg-row td{background:#F0F8F7!important;font-weight:700;color:var(--teal-d);font-style:italic;border-top:2px solid var(--teal-m)}
+
+/* ── BADGES + CELLS ── */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap}
+.b-ld{background:var(--ld);color:#fff}.b-cb{background:var(--cb);color:#fff}
+.vs-up{background:var(--green-l);color:var(--green);font-weight:700;border-radius:4px;padding:2px 5px;font-size:11px}
+.vs-dn{background:var(--red-l);color:var(--red);font-weight:700;border-radius:4px;padding:2px 5px;font-size:11px}
+.vs-na{color:#BDBDBD;font-style:italic;font-size:11px}
+.na{color:#BDBDBD;font-style:italic}
+.tr,.tc,.tl{text-align:right!important}.tc{text-align:center!important}.tl{text-align:left!important}
+.fw{font-weight:700}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.chart-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px}
+.chart-card{background:#fff;border-radius:8px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.chart-title{font-size:12px;font-weight:700;color:var(--teal-d);margin-bottom:10px;text-align:center}
+canvas{max-height:260px}
+
+/* ── FILTER BAR ── */
+.fbar{background:#fff;padding:10px 14px;border-radius:8px;margin-bottom:14px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.fbar label{font-size:11px;font-weight:600;color:var(--gray)}
+.fbar select,.fbar input{border:1px solid var(--border);border-radius:5px;padding:5px 9px;
+  font-size:11px;color:var(--text);background:#fff}
+.btn{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-secondary{background:#fff;border:1px solid var(--border)!important;color:var(--text)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── IMPORT ── */
+.imp-steps{display:flex;margin-bottom:16px;border-radius:8px;overflow:hidden;border:0.5px solid var(--border)}
+.imp-step{flex:1;padding:8px;text-align:center;font-size:11px;font-weight:600;color:var(--gray);
+  background:#fff;border-right:0.5px solid var(--border);cursor:default}
+.imp-step:last-child{border-right:none}
+.imp-step.active{color:#fff;background:var(--teal)}
+.imp-step.done{color:var(--green);background:var(--green-l)}
+.file-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.fzone{border:1.5px dashed var(--border);border-radius:8px;padding:18px 10px;text-align:center;
+  cursor:pointer;transition:background .15s;background:#fff}
+.fzone:hover,.fzone.drag{background:var(--teal-l);border-color:var(--teal)}
+.fzone.loaded{border-style:solid;border-color:var(--green);background:var(--green-l)}
+.fzone-icon{font-size:26px;color:var(--gray);margin-bottom:6px}
+.fzone-hint{font-size:11px;color:var(--gray)}
+.fzone-name{font-size:11px;color:var(--green);font-weight:700;margin-top:4px;word-break:break-all}
+.log{background:#F8FAFB;border-radius:6px;padding:8px 12px;font-size:11px;
+  color:var(--gray);max-height:120px;overflow-y:auto;line-height:1.9;font-family:monospace}
+.log .ok{color:var(--green)}.log .warn{color:#E65100}.log .err{color:var(--red)}
+.stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stat-box{background:var(--teal-l);border-radius:7px;padding:9px 13px;flex:1;min-width:80px}
+.stat-v{font-size:18px;font-weight:900;color:var(--teal)}
+.stat-l{font-size:10px;color:var(--gray);margin-top:2px}
+.prev-tbl-wrap{overflow-x:auto;border-radius:6px;border:0.5px solid var(--border);margin-top:10px}
+.prev-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.prev-tbl th{background:var(--teal);color:#fff;padding:6px 9px;text-align:left;font-weight:600;white-space:nowrap}
+.prev-tbl td{padding:5px 9px;border-bottom:0.5px solid var(--border);color:var(--text)}
+.prev-tbl tr:last-child td{border-bottom:none}
+.imp-done-icon{font-size:44px;text-align:center;color:var(--green);margin-bottom:10px}
+.hidden{display:none!important}
+.ttip{position:relative;cursor:help}
+.ttip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;
+  transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:10px;
+  padding:4px 8px;border-radius:4px;white-space:nowrap;z-index:999;pointer-events:none}
+
+/* ── RANK ── */
+.r1{background:#FFF9C4}.r2{background:#F5F5F5}.r3{background:#FFE0B2}
+@media(max-width:900px){.chart-grid,.chart-grid-3{grid-template-columns:1fr}.file-grid{grid-template-columns:1fr}}
+
+/* ── PDF ── */
+.pdf-bar{background:#fff;border-top:1px solid var(--border);padding:10px 22px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  position:sticky;bottom:0;z-index:200;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.pdf-bar-title{font-size:12px;font-weight:700;color:var(--gray)}
+.btn-pdf{background:var(--teal);color:#fff;border:none;border-radius:6px;
+  padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:opacity .15s}
+.btn-pdf:hover{opacity:.85}
+.btn-pdf:disabled{opacity:.4;cursor:not-allowed}
+.btn-pdf.danger{background:var(--red)}
+.pdf-opt{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gray)}
+.pdf-opt input[type=checkbox]{accent-color:var(--teal);width:14px;height:14px}
+.pdf-progress{display:none;font-size:11px;color:var(--teal);font-weight:600}
+.pdf-progress.show{display:inline}
+/* print hide */
+@media print{.tabs,.pdf-bar,.hdr,.fbar,.bench-strip,.imp-steps,#tab-imp{display:none!important}
+  .tab-panel{display:block!important;page-break-after:always}
+  body{background:#fff}.tbl-wrap{overflow:visible}table{min-width:unset}}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">BIDV</div>
+  <div>
+    <h1>DASHBOARD ĐÁNH GIÁ CÁN BỘ KHỐI BÁN LẺ</h1>
+    <p>BIDV Chi nhánh Tràng Tiền – Hà Nội &nbsp;|&nbsp; KHCN + 4 PGD + P.GDKH</p>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span class="data-badge badge-live" id="src-badge">📅 Dữ liệu gốc 15/05/2026</span>
+    <span class="hdr-badge" id="period-badge">42 Cán bộ</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="gTab('tq',this)">📊 Tổng Quan</div>
+  <div class="tab" onclick="gTab('ld',this)">👑 Lãnh Đạo</div>
+  <div class="tab" onclick="gTab('cb',this)">👤 Cán Bộ</div>
+  <div class="tab" onclick="gTab('kv',this)">📈 Khoản Vay</div>
+  <div class="tab" onclick="gTab('ss',this)">⚖️ So Sánh</div>
+  <div class="tab" onclick="gTab('bieu',this)">📉 Biểu Đồ</div>
+  <div class="tab" onclick="gTab('imp',this)">🔄 Import</div>
+</div>
+
+<div class="content">
+
+<!-- ══ TAB TỔNG QUAN ══ -->
+<div id="tab-tq" class="tab-panel active">
+  <div class="kpi-grid" id="kpi-tq"></div>
+  <div class="bench-strip">
+    <span class="bench-label">So sánh vs:</span>
+    <div class="bench-toggle">
+      <button class="bench-btn active" onclick="setBench('phong',this)">TB Phòng</button>
+      <button class="bench-btn" onclick="setBench('kbl',this)">TB Toàn Khối BL</button>
+      <button class="bench-btn" onclick="setBench('ld_kbl',this)">TB Lãnh đạo KBL</button>
+      <button class="bench-btn" onclick="setBench('cb_kbl',this)">TB Cán bộ KBL</button>
+    </div>
+    <span class="bench-info" id="bench-info-tq"></span>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-title">Dư nợ & HĐV theo Phòng (tỷ)</div><canvas id="c-dn-hdv"></canvas></div>
+    <div class="chart-card"><div class="chart-title">SL Khoản vay theo Phòng</div><canvas id="c-kv-phong"></canvas></div>
+  </div>
+  <div class="sec-title">📋 Tổng hợp theo Phòng</div>
+  <div class="tbl-wrap"><table id="tbl-tq"></table></div>
+</div>
+
+<!-- ══ TAB LÃNH ĐẠO ══ -->
+<div id="tab-ld" class="tab-panel">
+  <div class="kpi-grid" id="kpi-ld"></div>
+  <div class="bench-strip">
+    <span class="bench-label">So sánh vs:</span>
+    <div class="bench-toggle">
+      <button class="bench-btn active" onclick="setBenchLD('phong',this)">TB Phòng</button>
+      <button class="bench-btn" onclick="setBenchLD('kbl',this)">TB Toàn KBL</button>
+      <button class="bench-btn" onclick="setBenchLD('ld_kbl',this)">TB Lãnh đạo KBL</button>
+    </div>
+    <span class="bench-info" id="bench-info-ld"></span>
+  </div>
+  <div class="sec-title ld">👑 Lãnh Đạo (TP / PTP / GĐ / PGĐ)</div>
+  <div class="tbl-wrap"><table id="tbl-ld"></table></div>
+</div>
+
+<!-- ══ TAB CÁN BỘ ══ -->
+<div id="tab-cb" class="tab-panel">
+  <div class="kpi-grid" id="kpi-cb"></div>
+  <div class="bench-strip">
+    <span class="bench-label">So sánh vs:</span>
+    <div class="bench-toggle">
+      <button class="bench-btn active" onclick="setBenchCB('phong',this)">TB Phòng</button>
+      <button class="bench-btn" onclick="setBenchCB('kbl',this)">TB Toàn KBL</button>
+      <button class="bench-btn" onclick="setBenchCB('cb_kbl',this)">TB Cán bộ KBL</button>
+    </div>
+    <span class="bench-info" id="bench-info-cb"></span>
+  </div>
+  <div class="fbar">
+    <label>Phòng:</label>
+    <select id="f-phong-cb" onchange="renderCB()"><option value="">Tất cả</option></select>
+    <label>Sắp xếp:</label>
+    <select id="f-sort-cb" onchange="renderCB()">
+      <option value="kv">SL KV ↓</option><option value="dn">Dư nợ ↓</option>
+      <option value="hdv">HĐV ↓</option><option value="tnt">TNT ↓</option>
+    </select>
+    <button class="btn btn-secondary" onclick="document.getElementById('f-phong-cb').value='';renderCB()">Reset</button>
+  </div>
+  <div class="sec-title cb">👤 Cán Bộ Chuyên Môn</div>
+  <div class="tbl-wrap"><table id="tbl-cb"></table></div>
+</div>
+
+<!-- ══ TAB KHOẢN VAY ══ -->
+<div id="tab-kv" class="tab-panel">
+  <div class="kpi-grid" id="kpi-kv"></div>
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-title">TOP 15 Cán bộ SL Khoản vay</div><canvas id="c-top-kv"></canvas></div>
+    <div class="chart-card"><div class="chart-title">SL KV: Lãnh đạo vs Cán bộ (theo Phòng)</div><canvas id="c-kv-cmp"></canvas></div>
+  </div>
+  <div class="sec-title green">📈 Xếp hạng SL Khoản vay</div>
+  <div class="tbl-wrap"><table id="tbl-kv"></table></div>
+</div>
+
+<!-- ══ TAB SO SÁNH ══ -->
+<div id="tab-ss" class="tab-panel">
+  <div class="bench-strip" style="margin-bottom:14px">
+    <span class="bench-label">Benchmark:</span>
+    <div class="bench-toggle">
+      <button class="bench-btn active" onclick="setBenchSS('phong',this)">TB Phòng</button>
+      <button class="bench-btn" onclick="setBenchSS('kbl',this)">TB Toàn KBL</button>
+      <button class="bench-btn" onclick="setBenchSS('ld_kbl',this)">TB Lãnh đạo KBL</button>
+      <button class="bench-btn" onclick="setBenchSS('cb_kbl',this)">TB Cán bộ KBL</button>
+    </div>
+    <span class="bench-info" id="bench-info-ss"></span>
+  </div>
+  <div class="fbar">
+    <label>Phòng:</label>
+    <select id="f-phong-ss" onchange="renderSS()"><option value="">Tất cả</option></select>
+    <label>Loại:</label>
+    <select id="f-loai-ss" onchange="renderSS()">
+      <option value="">Tất cả</option><option value="ld">Lãnh đạo</option><option value="cb">Cán bộ</option>
+    </select>
+    <button class="btn btn-secondary" onclick="document.getElementById('f-phong-ss').value='';document.getElementById('f-loai-ss').value='';renderSS()">Reset</button>
+  </div>
+  <div class="sec-title">⚖️ So sánh chỉ tiêu cá nhân vs Benchmark</div>
+  <div class="tbl-wrap"><table id="tbl-ss"></table></div>
+</div>
+
+<!-- ══ TAB BIỂU ĐỒ ══ -->
+<div id="tab-bieu" class="tab-panel">
+  <div class="chart-grid-3">
+    <div class="chart-card"><div class="chart-title">Thu nhập thuần (tỷ)</div><canvas id="c-tnt"></canvas></div>
+    <div class="chart-card"><div class="chart-title">NIM HĐV TB (%)</div><canvas id="c-nim"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Dịch vụ ròng (triệu)</div><canvas id="c-dv"></canvas></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-title">Phân bổ CB theo Phòng</div><canvas id="c-phanbo"></canvas></div>
+    <div class="chart-card"><div class="chart-title">TOP 10 CB Huy động vốn cao nhất (tỷ)</div><canvas id="c-top-dn"></canvas></div>
+  </div>
+  <div class="chart-grid-3">
+    <div class="chart-card"><div class="chart-title">TOP 10 CB Thu nhập thuần (tỷ)</div><canvas id="c-top-tnt"></canvas></div>
+    <div class="chart-card"><div class="chart-title">TOP 10 CB Dịch vụ ròng (triệu)</div><canvas id="c-top-dv"></canvas></div>
+    <div class="chart-card"><div class="chart-title">TOP 10 CB Dư nợ cao nhất (tỷ)</div><canvas id="c-top-dn2"></canvas></div>
+  </div>
+</div>
+
+<!-- ══ TAB IMPORT ══ -->
+<div id="tab-imp" class="tab-panel">
+  <div class="imp-steps" id="imp-steps">
+    <div class="imp-step active" id="is1">1 · Upload file</div>
+    <div class="imp-step" id="is2">2 · Kiểm tra cột</div>
+    <div class="imp-step" id="is3">3 · Xem trước</div>
+    <div class="imp-step" id="is4">4 · Áp dụng</div>
+  </div>
+
+  <!-- Step 1 -->
+  <div id="ip1">
+    <div class="chart-card" style="margin-bottom:14px">
+      <p style="font-size:13px;font-weight:700;color:var(--teal-d);margin-bottom:4px">📂 Chọn file dữ liệu (.xlsx hoặc .csv)</p>
+      <p style="font-size:11px;color:var(--gray);margin-bottom:12px">Upload 1, 2 hoặc cả 3 file. Dashboard sẽ tự merge và cập nhật tất cả biểu đồ.</p>
+      <div class="file-grid">
+        <div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600">1 · Quy mô &amp; Hiệu quả</p>
+          <div class="fzone" id="fz1" onclick="document.getElementById('fi1').click()"
+            ondragover="fDrag(event,'fz1')" ondragleave="fLeave('fz1')" ondrop="fDrop(event,'fz1',1)">
+            <div class="fzone-icon">📊</div>
+            <div class="fzone-hint">Kéo &amp; thả hoặc click</div>
+            <div class="fzone-name hidden" id="fn1"></div>
+          </div>
+          <input type="file" id="fi1" accept=".xlsx,.csv" class="hidden" onchange="fHandle(event,1)">
+        </div>
+        <div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600">2 · Số lượng Khoản vay</p>
+          <div class="fzone" id="fz2" onclick="document.getElementById('fi2').click()"
+            ondragover="fDrag(event,'fz2')" ondragleave="fLeave('fz2')" ondrop="fDrop(event,'fz2',2)">
+            <div class="fzone-icon">📈</div>
+            <div class="fzone-hint">Kéo &amp; thả hoặc click</div>
+            <div class="fzone-name hidden" id="fn2"></div>
+          </div>
+          <input type="file" id="fi2" accept=".xlsx,.csv" class="hidden" onchange="fHandle(event,2)">
+        </div>
+        <div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600">3 · Danh sách cán bộ</p>
+          <div class="fzone" id="fz3" onclick="document.getElementById('fi3').click()"
+            ondragover="fDrag(event,'fz3')" ondragleave="fLeave('fz3')" ondrop="fDrop(event,'fz3',3)">
+            <div class="fzone-icon">👥</div>
+            <div class="fzone-hint">Kéo &amp; thả hoặc click</div>
+            <div class="fzone-name hidden" id="fn3"></div>
+          </div>
+          <input type="file" id="fi3" accept=".xlsx,.csv" class="hidden" onchange="fHandle(event,3)">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-primary" id="imp-next1" disabled onclick="iStep(2)">Tiếp theo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div id="ip2" class="hidden">
+    <div class="chart-card" style="margin-bottom:14px">
+      <p style="font-size:13px;font-weight:700;color:var(--teal-d);margin-bottom:4px">🔍 Kiểm tra nhận diện cột</p>
+      <p style="font-size:11px;color:var(--gray);margin-bottom:12px">Hệ thống tự khớp cột. Điều chỉnh nếu chưa đúng.</p>
+      <div id="imp-map"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:12px">
+        <button class="btn btn-secondary" onclick="iStep(1)">← Quay lại</button>
+        <button class="btn btn-primary" onclick="iStep(3)">Xem trước →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div id="ip3" class="hidden">
+    <div class="chart-card" style="margin-bottom:14px">
+      <p style="font-size:13px;font-weight:700;color:var(--teal-d);margin-bottom:4px">👁 Xem trước dữ liệu đã xử lý</p>
+      <div class="stat-row" id="imp-prev-stats"></div>
+      <div id="imp-prev-tbl"></div>
+      <p style="font-size:11px;font-weight:600;color:var(--gray);margin:10px 0 4px">Log kiểm tra</p>
+      <div class="log" id="imp-log"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:12px">
+        <button class="btn btn-secondary" onclick="iStep(2)">← Quay lại</button>
+        <button class="btn btn-primary" onclick="iStep(4)">✅ Áp dụng vào Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div id="ip4" class="hidden">
+    <div class="chart-card" style="text-align:center;padding:2rem">
+      <div class="imp-done-icon">✅</div>
+      <p style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px">Dashboard đã cập nhật!</p>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:16px" id="imp-done-msg"></p>
+      <div class="stat-row" id="imp-done-stats" style="justify-content:center;max-width:380px;margin:0 auto 16px"></div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-primary" onclick="gTab('tq',null);document.querySelectorAll('.tab')[0].click()">📊 Xem Tổng Quan</button>
+        <button class="btn btn-secondary" onclick="iReset()">🔄 Import bộ dữ liệu khác</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .content -->
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const SEED = [{"ma": "157271", "ten": "Trần Thị Hằng", "phong": "P. KHCN", "chucvu": "Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.1, "hdv": 85.0, "tnt": 1.2, "dv": 75.0, "nim": 3.24, "nim_td": 1.73, "kv": 15, "nim_tt": -4.61}, {"ma": "157345", "ten": "Nguyễn Công Thành", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 677.7, "hdv": 659.4, "tnt": 6.69, "dv": 137.0, "nim": 1.75, "nim_td": 0.93, "kv": 102, "nim_tt": 0.95}, {"ma": "157332", "ten": "Nguyễn Thị Phương", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 370.0, "hdv": 159.6, "tnt": 2.75, "dv": 86.0, "nim": 2.75, "nim_td": 1.52, "kv": 297, "nim_tt": 1.53}, {"ma": "151417", "ten": "Nguyễn Thị Thanh Nga", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 708.9, "hdv": 445.0, "tnt": 5.45, "dv": 187.0, "nim": 2.53, "nim_td": 1.14, "kv": 209, "nim_tt": 1.16}, {"ma": "157359", "ten": "Nguyễn Việt Anh", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": null, "hdv": null, "tnt": null, "dv": null, "nim": null, "nim_td": null, "kv": 0, "nim_tt": null}, {"ma": "173264", "ten": "Lê Thùy Linh", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 191.8, "hdv": 90.1, "tnt": 1.65, "dv": 84.0, "nim": 2.91, "nim_td": 1.2, "kv": 249, "nim_tt": 1.26}, {"ma": "165874", "ten": "Ninh Thu Hương", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 302.1, "hdv": 291.7, "tnt": 2.69, "dv": 168.0, "nim": 1.0, "nim_td": 1.14, "kv": 181, "nim_tt": 1.2}, {"ma": "157253", "ten": "Cao Thanh Thủy", "phong": "PGD Lương Định Của", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 54.3, "tnt": 1.02, "dv": 117.0, "nim": 2.04, "nim_td": 2.55, "kv": 21, "nim_tt": 2.55}, {"ma": "36691", "ten": "Phạm Thị Tuyết Mai", "phong": "PGD Lương Định Của", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 656.3, "hdv": 725.0, "tnt": 5.25, "dv": 163.0, "nim": 1.78, "nim_td": 1.26, "kv": 214, "nim_tt": 1.27}, {"ma": "178446", "ten": "Phan Đức Trung", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 65.9, "hdv": 140.9, "tnt": 1.04, "dv": 9.0, "nim": 1.3, "nim_td": 1.28, "kv": 94, "nim_tt": 1.29}, {"ma": "157252", "ten": "Vũ Hoài Phương", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 404.7, "hdv": 318.2, "tnt": 3.12, "dv": 70.0, "nim": 1.18, "nim_td": 1.22, "kv": 343, "nim_tt": 1.22}, {"ma": "157257", "ten": "Vũ Thị Ngọc Ánh", "phong": "PGD Nam Cao", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 0.0, "tnt": 0.0, "dv": 0.0, "nim": 3.85, "nim_td": 3.8, "kv": 1, "nim_tt": 3.8}, {"ma": "153545", "ten": "Nguyễn Thị Ngọc Diệp", "phong": "PGD Nam Cao", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 537.5, "hdv": 640.4, "tnt": 6.08, "dv": 99.0, "nim": 1.19, "nim_td": -1.57, "kv": 210, "nim_tt": -1.54}, {"ma": "158495", "ten": "Nguyễn Trung Hiếu", "phong": "PGD Nam Cao", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 448.7, "hdv": 350.1, "tnt": 3.66, "dv": 297.0, "nim": 2.36, "nim_td": 1.13, "kv": 348, "nim_tt": 1.13}, {"ma": "150432", "ten": "Tống Xuân Trường", "phong": "PGD Hào Nam", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 5.1, "hdv": 265.3, "tnt": 2.88, "dv": 387.0, "nim": 2.1, "nim_td": 1.49, "kv": 34, "nim_tt": 1.55}, {"ma": "149031", "ten": "Trần Văn Long", "phong": "PGD Hào Nam", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 473.3, "hdv": 552.0, "tnt": 5.04, "dv": 63.0, "nim": 2.55, "nim_td": 1.38, "kv": 145, "nim_tt": 1.38}, {"ma": "145318", "ten": "Tạ Thị Vân", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 4", "loai": "Cán bộ", "dn": 465.1, "hdv": 379.4, "tnt": 5.15, "dv": 217.0, "nim": 1.7, "nim_td": 1.36, "kv": 337, "nim_tt": 1.39}, {"ma": "180168", "ten": "Bùi Mạnh Thắng", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 1", "loai": "Cán bộ", "dn": 279.1, "hdv": 120.9, "tnt": 2.53, "dv": 143.0, "nim": 2.82, "nim_td": 1.41, "kv": 120, "nim_tt": 1.43}, {"ma": "28268", "ten": "Nguyễn Thị Thái Hà", "phong": "PGD West Lake", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 3.8, "hdv": 458.7, "tnt": 3.69, "dv": 99.0, "nim": 2.25, "nim_td": 1.68, "kv": 23, "nim_tt": 1.68}, {"ma": "145344", "ten": "Bùi Phương Anh", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 687.2, "hdv": 771.2, "tnt": 8.31, "dv": 146.0, "nim": 2.24, "nim_td": 1.21, "kv": 189, "nim_tt": 1.23}, {"ma": "164065", "ten": "Dương Thanh Tùng", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 214.6, "hdv": 200.8, "tnt": 2.73, "dv": 92.0, "nim": 2.81, "nim_td": 1.67, "kv": 125, "nim_tt": 1.68}, {"ma": "182410", "ten": "Nguyễn Văn Thắng", "phong": "PGD West Lake", "chucvu": "Chuyên viên khách hàng hỗn hợp cấp 1", "loai": "Cán bộ", "dn": 115.5, "hdv": 134.7, "tnt": 1.63, "dv": 77.0, "nim": 0.58, "nim_td": 1.43, "kv": 113, "nim_tt": 1.44}, {"ma": "157260", "ten": "Phạm Thị Thúy Hằng", "phong": "P. GD KH", "chucvu": "Trưởng phòng Giao dịch Khách hàng", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.0, "hdv": 43.1, "tnt": 0.51, "dv": 82.0, "nim": 3.33, "nim_td": 3.54, "kv": 4, "nim_tt": 3.55}];
+
+
+const EXCLUDE_CV = ['giao dịch viên', 'chuyên viên ngân hàng đa năng', 'phó giám đốc phòng giao dịch phụ trách tác nghiệp'];
+function filterExclude(arr){ return arr.filter(r=>!EXCLUDE_CV.some(e=>r.chucvu.toLowerCase().includes(e))); }
+
+function nimTTCell(v){
+  if(v==null) return '<span class="na">—</span>';
+  var s=v<0?'color:var(--red);font-weight:700':v>=2?'color:var(--green);font-weight:700':'';
+  return s?'<span style="'+s+'">'+v.toFixed(2)+'%</span>':v.toFixed(2)+'%';
+}
+const PHONGS = ['P. KHCN','PGD Lương Định Của','PGD Nam Cao','PGD Hào Nam','PGD West Lake','P. GD KH'];
+const TEAL_PAL = ['#00736B','#2E7D72','#009688','#4DB6AC','#26A69A','#80CBC4'];
+const LD_CVS = ['Trưởng phòng Khách hàng cá nhân','Phó Trưởng phòng Khách hàng cá nhân','Giám đốc Phòng giao dịch','Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh','Trưởng phòng Giao dịch Khách hàng'];
+
+// live data
+let DATA = filterExclude(JSON.parse(JSON.stringify(SEED)));
+
+// benchmark mode per tab
+let benchTQ = 'phong', benchLD = 'phong', benchCB = 'phong', benchSS = 'phong';
+
+// charts registry
+const CHARTS = {};
+
+// ── HELPERS ──────────────────────────────────────────────────
+const isLD = r => r.loai && r.loai.includes('Lãnh đạo');
+const f1  = v => v==null ? null : +v.toFixed(1);
+const f2  = v => v==null ? null : +v.toFixed(2);
+const na  = v => v==null || v===0 ? '<span class="na">—</span>' : v;
+const naF = (v,d=1) => v==null ? '<span class="na">—</span>' : (+v).toFixed(d);
+const naI = v => v==null||v===0 ? '<span class="na">—</span>' : (+v).toLocaleString('vi');
+const pct = (v,t) => { if(v==null||!t||t===0)return '<span class="vs-na">—</span>'; const p=(v-t)/t*100; return `<span class="${p>=0?'vs-up':'vs-dn'}">${p>=0?'+':''}${p.toFixed(1)}%</span>`; };
+
+function avg(arr, key) {
+  const vs = arr.filter(r=>r[key]!=null && r[key]!==0);
+  return vs.length ? vs.reduce((a,r)=>a+r[key],0)/vs.length : 0;
+}
+function sum(arr,key){ return arr.reduce((a,r)=>a+(r[key]||0),0); }
+
+// ── BENCHMARK CALCULATOR ──────────────────────────────────────
+function getBench(mode, row) {
+  const allLD = DATA.filter(isLD);
+  const allCB = DATA.filter(r=>!isLD(r));
+  const all   = DATA;
+  if (mode==='phong') {
+    const sub = DATA.filter(r=>r.phong===row.phong);
+    return { dn:avg(sub,'dn'), hdv:avg(sub,'hdv'), tnt:avg(sub,'tnt'), kv:sum(sub,'kv')/sub.length, dv:avg(sub,'dv'), nim:avg(sub,'nim'), nim_tt:avg(sub,'nim_tt'), label:'TB Phòng '+row.phong };
+  }
+  if (mode==='kbl') return { dn:avg(all,'dn'), hdv:avg(all,'hdv'), tnt:avg(all,'tnt'), kv:sum(all,'kv')/all.length, dv:avg(all,'dv'), nim:avg(all,'nim'), nim_tt:avg(all,'nim_tt'), label:'TB Toàn KBL' };
+  if (mode==='ld_kbl') return { dn:avg(allLD,'dn'), hdv:avg(allLD,'hdv'), tnt:avg(allLD,'tnt'), kv:sum(allLD,'kv')/allLD.length, dv:avg(allLD,'dv'), nim:avg(allLD,'nim'), nim_tt:avg(allLD,'nim_tt'), label:'TB Lãnh đạo KBL' };
+  if (mode==='cb_kbl') return { dn:avg(allCB,'dn'), hdv:avg(allCB,'hdv'), tnt:avg(allCB,'tnt'), kv:sum(allCB,'kv')/allCB.length, dv:avg(allCB,'dv'), nim:avg(allCB,'nim'), nim_tt:avg(allCB,'nim_tt'), label:'TB Cán bộ KBL' };
+  return {};
+}
+
+function benchInfoHTML(mode) {
+  const allLD=DATA.filter(isLD), allCB=DATA.filter(r=>!isLD(r)), all=DATA;
+  const src = mode==='kbl'?all : mode==='ld_kbl'?allLD : mode==='cb_kbl'?allCB : null;
+  if (!src) return 'Tính riêng theo từng phòng';
+  return `n=${src.length} CB &nbsp;|&nbsp; TB DN: <span>${avg(src,'dn').toFixed(0)} tỷ</span> &nbsp;|&nbsp; TB HĐV: <span>${avg(src,'hdv').toFixed(0)} tỷ</span> &nbsp;|&nbsp; TB KV: <span>${(sum(src,'kv')/src.length).toFixed(0)}</span>`;
+}
+
+// ── SET BENCH ─────────────────────────────────────────────────
+function setBench(m, btn) { benchTQ=m; hiliteBench(btn); document.getElementById('bench-info-tq').innerHTML=benchInfoHTML(m); renderTQ(); }
+function setBenchLD(m,btn){ benchLD=m; hiliteBench(btn); document.getElementById('bench-info-ld').innerHTML=benchInfoHTML(m); renderLD(); }
+function setBenchCB(m,btn){ benchCB=m; hiliteBench(btn); document.getElementById('bench-info-cb').innerHTML=benchInfoHTML(m); renderCB(); }
+function setBenchSS(m,btn){ benchSS=m; hiliteBench(btn); document.getElementById('bench-info-ss').innerHTML=benchInfoHTML(m); renderSS(); }
+function hiliteBench(btn) {
+  if (!btn) return;
+  btn.closest('.bench-toggle').querySelectorAll('.bench-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── TAB SWITCH ────────────────────────────────────────────────
+let bieuRendered = false;
+function gTab(id, el) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (el) { document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); }
+  if (id==='bieu' && !bieuRendered) { renderBieu(); bieuRendered=true; }
+}
+
+// ── TAB: TỔNG QUAN ────────────────────────────────────────────
+function renderTQ() {
+  const all=DATA, totDN=sum(all,'dn'), totHDV=sum(all,'hdv'), totKV=sum(all,'kv'), totTNT=sum(all,'tnt'), totDV=sum(all,'dv');
+  document.getElementById('kpi-tq').innerHTML=[
+    {l:'Tổng CB',v:all.length,s:'cán bộ',c:''},
+    {l:'Lãnh đạo',v:all.filter(isLD).length,s:'TP/PTP/GĐ/PGĐ',c:''},
+    {l:'Cán bộ',v:all.filter(r=>!isLD(r)).length,s:'chuyên viên/GDV',c:'gold'},
+    {l:'Tổng Dư nợ',v:totDN.toFixed(0),s:'tỷ VNĐ',c:'green'},
+    {l:'Tổng HĐV',v:totHDV.toFixed(0),s:'tỷ VNĐ',c:'green'},
+    {l:'SL Khoản vay',v:totKV.toLocaleString('vi'),s:'khoản',c:'orange'},
+    {l:'TNT',v:totTNT.toFixed(1),s:'tỷ VNĐ',c:'blue'},
+    {l:'DV ròng',v:totDV.toFixed(0),s:'triệu VNĐ',c:'gold'},
+  ].map(k=>`<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  document.getElementById('bench-info-tq').innerHTML = benchInfoHTML(benchTQ);
+
+  // Charts
+  mkChart('c-dn-hdv','bar',{
+    labels:PHONGS,
+    datasets:[
+      {label:'Dư nợ (tỷ)',data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p),'dn').toFixed(0)),backgroundColor:'rgba(0,115,107,.8)'},
+      {label:'HĐV (tỷ)', data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p),'hdv').toFixed(0)),backgroundColor:'rgba(200,169,81,.8)'}
+    ]
+  },{plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}});
+
+  mkChart('c-kv-phong','bar',{
+    labels:PHONGS,
+    datasets:[{label:'SL KV',data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p),'kv')),backgroundColor:TEAL_PAL}]
+  },{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+
+  // Table
+  let h=`<thead><tr><th>Phòng</th><th>CB</th><th>LD</th><th>CB CM</th>
+    <th>DN (tỷ)</th><th>HĐV (tỷ)</th><th>TNT (tỷ)</th><th>DV (tr)</th>
+    <th>SL KV</th><th>TB NIM HĐV</th>
+    <th class="ttip" data-tip="vs Benchmark được chọn">vs BM – DN</th>
+    <th class="ttip" data-tip="vs Benchmark được chọn">vs BM – KV</th>
+  </tr></thead><tbody>`;
+  let totR = {dn:0,hdv:0,tnt:0,dv:0,kv:0,n:0,nld:0,ncb:0};
+  PHONGS.forEach((p,i)=>{
+    const s=DATA.filter(r=>r.phong===p);
+    const ldn=s.filter(isLD).length, cbn=s.filter(r=>!isLD(r)).length;
+    const pDN=sum(s,'dn'),pHDV=sum(s,'hdv'),pTNT=sum(s,'tnt'),pDV=sum(s,'dv'),pKV=sum(s,'kv');
+    const nimA=avg(s,'nim');
+    totR.dn+=pDN; totR.hdv+=pHDV; totR.tnt+=pTNT; totR.dv+=pDV; totR.kv+=pKV; totR.n+=s.length; totR.nld+=ldn; totR.ncb+=cbn;
+    // benchmark for this phong row: use avg of phong as "individual" to compare vs KBL bench
+    const bm = getBench(benchTQ, {phong:p});
+    const bmDN = benchTQ==='phong' ? null : bm.dn;
+    const bmKV = benchTQ==='phong' ? null : bm.kv;
+    const avgPDN = avg(s,'dn'), avgPKV = pKV/s.length;
+    h+=`<tr style="${i%2?'background:var(--alt)':''}">
+      <td class="fw">${p}</td><td class="tc">${s.length}</td>
+      <td class="tc"><span class="badge b-ld">${ldn}</span></td>
+      <td class="tc"><span class="badge b-cb">${cbn}</span></td>
+      <td class="tr">${pDN.toFixed(1)}</td><td class="tr">${pHDV.toFixed(1)}</td>
+      <td class="tr">${pTNT.toFixed(2)}</td><td class="tr">${pDV.toFixed(0)}</td>
+      <td class="tc">${pKV}</td>
+      <td class="tc">${nimA?nimA.toFixed(2)+'%':'<span class="na">—</span>'}</td>
+      <td class="tc">${bmDN?pct(avgPDN,bmDN):'<span class="na">—</span>'}</td>
+      <td class="tc">${bmKV?pct(avgPKV,bmKV):'<span class="na">—</span>'}</td>
+    </tr>`;
+  });
+  h+=`<tr class="avg-row"><td>TỔNG</td><td class="tc">${totR.n}</td><td class="tc">${totR.nld}</td><td class="tc">${totR.ncb}</td>
+    <td class="tr">${totR.dn.toFixed(1)}</td><td class="tr">${totR.hdv.toFixed(1)}</td>
+    <td class="tr">${totR.tnt.toFixed(2)}</td><td class="tr">${totR.dv.toFixed(0)}</td>
+    <td class="tc">${totR.kv}</td><td colspan="3"></td></tr></tbody>`;
+  document.getElementById('tbl-tq').innerHTML=h;
+}
+
+// ── TAB: LÃNH ĐẠO ─────────────────────────────────────────────
+function renderLD() {
+  const lds=DATA.filter(isLD);
+  document.getElementById('kpi-ld').innerHTML=[
+    {l:'Lãnh đạo',v:lds.length,s:'TP/PTP/GĐ/PGĐ',c:''},
+    {l:'TB Dư nợ',v:avg(lds,'dn').toFixed(0),s:'tỷ/người',c:'green'},
+    {l:'TB HĐV',v:avg(lds,'hdv').toFixed(0),s:'tỷ/người',c:'green'},
+    {l:'TB SL KV',v:(sum(lds,'kv')/lds.length).toFixed(0),s:'KV/người',c:'orange'},
+    {l:'Tổng TNT',v:sum(lds,'tnt').toFixed(1),s:'tỷ',c:'blue'},
+    {l:'Tổng DV ròng',v:sum(lds,'dv').toFixed(0),s:'triệu',c:'gold'},
+  ].map(k=>`<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+  document.getElementById('bench-info-ld').innerHTML=benchInfoHTML(benchLD);
+
+  let h=`<thead><tr><th>#</th><th>Mã CB</th><th style="min-width:140px">Họ &amp; Tên</th><th>Phòng</th><th style="min-width:160px">Chức vụ</th>
+    <th class="ld-th">DN CK (tỷ)</th><th class="ld-th">HĐV (tỷ)</th><th class="ld-th">TNT (tỷ)</th>
+    <th class="ld-th">DV ròng (tr)</th><th class="ld-th">NIM HĐV (%)</th><th class="ld-th">NIM TD TT (%)</th><th class="ld-th">SL KV</th>
+    <th class="bench-ld-th ttip" data-tip="So Dư nợ vs benchmark">vs BM – DN</th>
+    <th class="bench-ld-th ttip" data-tip="So HĐV vs benchmark">vs BM – HĐV</th>
+    <th class="bench-ld-th ttip" data-tip="So NIM TD TT vs benchmark">vs BM – NIM TT</th>
+    <th class="bench-ld-th ttip" data-tip="So SL KV vs benchmark">vs BM – KV</th>
+  </tr></thead><tbody>`;
+  let idx=0, prevP='';
+  PHONGS.forEach(p=>{
+    const rows=lds.filter(r=>r.phong===p); if(!rows.length) return;
+    h+=`<tr class="ph-row ld"><td colspan="15">📌 ${p} — Lãnh đạo</td></tr>`;
+    rows.forEach((r,ri)=>{
+      idx++;
+      const bm=getBench(benchLD,r);
+      h+=`<tr class="row-ld">
+        <td class="tc">${idx}</td><td class="tc">${r.ma}</td>
+        <td class="fw">${r.ten}</td><td>${r.phong}</td>
+        <td style="font-size:11px">${r.chucvu}</td>
+        <td class="tr">${naF(r.dn)}</td><td class="tr">${naF(r.hdv)}</td>
+        <td class="tr">${naF(r.tnt,2)}</td><td class="tr">${naI(r.dv)}</td>
+        <td class="tc">${r.nim!=null?r.nim.toFixed(2)+'%':'<span class="na">—</span>'}</td>
+        <td class="tc">${nimTTCell(r.nim_tt)}</td>
+        <td class="tc">${r.kv>0?r.kv:'<span class="na">—</span>'}</td>
+        <td class="tc">${pct(r.dn,bm.dn)}</td>
+        <td class="tc">${pct(r.hdv,bm.hdv)}</td>
+        <td class="tc">${pct(r.nim_tt,bm.nim_tt)}</td>
+        <td class="tc">${pct(r.kv>0?r.kv:null,bm.kv)}</td>
+      </tr>`;
+    });
+    // avg line
+    const pHas=rows.filter(r=>r.dn!=null);
+    if(pHas.length) h+=`<tr class="avg-row">
+      <td colspan="5" style="text-align:right;font-style:italic">📊 TB Lãnh đạo – ${p}</td>
+      <td class="tr">${avg(pHas,'dn').toFixed(1)}</td>
+      <td class="tr">${avg(pHas,'hdv').toFixed(1)}</td>
+      <td class="tr">${avg(pHas,'tnt').toFixed(2)}</td>
+      <td>—</td>
+      <td class="tc">${avg(pHas.filter(r=>r.nim_tt!=null),'nim_tt').toFixed(2)}%</td>
+      <td class="tc">${Math.round(sum(rows,'kv')/rows.length)}</td>
+      <td colspan="4"></td></tr>`;
+  });
+  h+=`</tbody>`;
+  document.getElementById('tbl-ld').innerHTML=h;
+}
+
+// ── TAB: CÁN BỘ ───────────────────────────────────────────────
+function renderCB() {
+  const fp=document.getElementById('f-phong-cb').value;
+  const sk=document.getElementById('f-sort-cb').value;
+  let cbs=DATA.filter(r=>!isLD(r));
+  if(fp) cbs=cbs.filter(r=>r.phong===fp);
+  cbs=[...cbs].sort((a,b)=>(b[sk]||0)-(a[sk]||0));
+  document.getElementById('bench-info-cb').innerHTML=benchInfoHTML(benchCB);
+
+  const allCB=DATA.filter(r=>!isLD(r));
+  document.getElementById('kpi-cb').innerHTML=[
+    {l:'Tổng CB CM',v:allCB.length,s:'chuyên viên/GDV',c:''},
+    {l:'Có dữ liệu QM',v:allCB.filter(r=>r.dn!=null).length,s:`/ ${allCB.length} CB`,c:''},
+    {l:'TB Dư nợ',v:avg(allCB,'dn').toFixed(0),s:'tỷ/người',c:'green'},
+    {l:'TB SL KV',v:(sum(allCB,'kv')/allCB.length).toFixed(0),s:'KV/người',c:'orange'},
+    {l:'TB HĐV',v:avg(allCB,'hdv').toFixed(0),s:'tỷ/người',c:'blue'},
+    {l:'Top KV',v:Math.max(...allCB.map(r=>r.kv)),s:'khoản vay cao nhất',c:'gold'},
+  ].map(k=>`<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  let h=`<thead><tr><th>#</th><th>Mã CB</th><th style="min-width:130px">Họ &amp; Tên</th><th>Phòng</th><th style="min-width:160px">Chức vụ</th>
+    <th class="cb-th">DN CK (tỷ)</th><th class="cb-th">HĐV (tỷ)</th><th class="cb-th">TNT (tỷ)</th>
+    <th class="cb-th">DV ròng (tr)</th><th class="cb-th">NIM HĐV (%)</th><th class="cb-th">NIM TD TT (%)</th><th class="cb-th">SL KV</th>
+    <th class="bench-th ttip" data-tip="So Dư nợ vs benchmark">vs BM – DN</th>
+    <th class="bench-th ttip" data-tip="So HĐV vs benchmark">vs BM – HĐV</th>
+    <th class="bench-th ttip" data-tip="So NIM TD TT vs benchmark">vs BM – NIM TT</th>
+    <th class="bench-th ttip" data-tip="So SL KV vs benchmark">vs BM – KV</th>
+  </tr></thead><tbody>`;
+  let idx=0;
+  PHONGS.forEach(p=>{
+    if(fp&&p!==fp) return;
+    const rows=cbs.filter(r=>r.phong===p); if(!rows.length) return;
+    h+=`<tr class="ph-row cb"><td colspan="15">📌 ${p} — Cán bộ</td></tr>`;
+    rows.forEach((r,ri)=>{
+      idx++;
+      const bm=getBench(benchCB,r);
+      h+=`<tr class="${ri%2?'row-alt':'row-even'}">
+        <td class="tc">${idx}</td><td class="tc">${r.ma}</td>
+        <td class="fw">${r.ten}</td><td>${r.phong}</td>
+        <td style="font-size:11px">${r.chucvu}</td>
+        <td class="tr">${naF(r.dn)}</td><td class="tr">${naF(r.hdv)}</td>
+        <td class="tr">${naF(r.tnt,2)}</td><td class="tr">${naI(r.dv)}</td>
+        <td class="tc">${r.nim!=null?r.nim.toFixed(2)+'%':'<span class="na">—</span>'}</td>
+        <td class="tc">${nimTTCell(r.nim_tt)}</td>
+        <td class="tc">${r.kv>0?r.kv:'<span class="na">—</span>'}</td>
+        <td class="tc">${pct(r.dn,bm.dn)}</td>
+        <td class="tc">${pct(r.hdv,bm.hdv)}</td>
+        <td class="tc">${pct(r.nim_tt,bm.nim_tt)}</td>
+        <td class="tc">${pct(r.kv>0?r.kv:null,bm.kv)}</td>
+      </tr>`;
+    });
+  });
+  h+=`</tbody>`;
+  document.getElementById('tbl-cb').innerHTML=h;
+}
+
+// ── TAB: KHOẢN VAY ────────────────────────────────────────────
+function renderKV() {
+  const withKV=DATA.filter(r=>r.kv>0).sort((a,b)=>b.kv-a.kv);
+  const totKV=sum(DATA,'kv'), avgKV=withKV.length?sum(withKV,'kv')/withKV.length:0;
+  document.getElementById('kpi-kv').innerHTML=[
+    {l:'Tổng SL KV',v:totKV.toLocaleString('vi'),s:'toàn KBL',c:''},
+    {l:'CB có KV',v:withKV.length,s:`/ ${DATA.length} CB`,c:''},
+    {l:'TB/CB có KV',v:avgKV.toFixed(0),s:'khoản vay',c:'green'},
+    {l:'KV Lãnh đạo',v:sum(DATA.filter(isLD),'kv'),s:'tổng',c:'blue'},
+    {l:'KV Cán bộ',v:sum(DATA.filter(r=>!isLD(r)),'kv'),s:'tổng',c:'gold'},
+    {l:'#1 CB',v:withKV[0]?.kv||0,s:withKV[0]?.ten||'—',c:'orange'},
+  ].map(k=>`<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  const top15=withKV.slice(0,15);
+  mkChart('c-top-kv','bar',{
+    labels:top15.map(r=>r.ten.split(' ').slice(-2).join(' ')),
+    datasets:[{label:'SL KV',data:top15.map(r=>r.kv),
+      backgroundColor:top15.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(46,125,114,.75)')}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
+
+  mkChart('c-kv-cmp','bar',{
+    labels:PHONGS,
+    datasets:[
+      {label:'Lãnh đạo',data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p&&isLD(r)),'kv')),backgroundColor:'rgba(27,94,84,.85)'},
+      {label:'Cán bộ', data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p&&!isLD(r)),'kv')),backgroundColor:'rgba(200,169,81,.75)'},
+    ]
+  },{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
+
+  let h=`<thead><tr><th>Hạng</th><th>Mã CB</th><th style="min-width:140px">Họ &amp; Tên</th>
+    <th>Phòng</th><th>Loại CB</th><th>SL KV</th>
+    <th class="ttip" data-tip="vs TB toàn KBL">vs TB KBL</th>
+    <th class="ttip" data-tip="vs TB cùng nhóm (LD hoặc CB)">vs TB nhóm</th>
+    <th>Đánh giá</th>
+  </tr></thead><tbody>`;
+  const avgKV_LD=sum(DATA.filter(isLD),'kv')/(DATA.filter(isLD).length||1);
+  const avgKV_CB=sum(DATA.filter(r=>!isLD(r)),'kv')/(DATA.filter(r=>!isLD(r)).length||1);
+  withKV.forEach((r,i)=>{
+    const rk=i+1;
+    const p=(r.kv-avgKV)/avgKV*100;
+    const grpAvg=isLD(r)?avgKV_LD:avgKV_CB;
+    let bg='', medal='';
+    if(rk===1){bg='r1';medal='🥇';}else if(rk===2){bg='r2';medal='🥈';}else if(rk===3){bg='r3';medal='🥉';}
+    const ev=rk<=3?['Xuất sắc','Tốt','Tốt'][rk-1]:p>=20?'✅ Trên TB':p>=0?'📊 Đạt TB':'⚠️ Dưới TB';
+    h+=`<tr class="${bg}" style="${i%2&&rk>3?'background:var(--alt)':''}">
+      <td class="tc fw">${medal||rk}</td><td class="tc">${r.ma}</td>
+      <td class="fw">${r.ten}</td><td>${r.phong}</td>
+      <td class="tc"><span class="badge ${isLD(r)?'b-ld':'b-cb'}">${isLD(r)?'👑 LD':'👤 CB'}</span></td>
+      <td class="tc fw" style="font-size:14px;color:var(--teal)">${r.kv}</td>
+      <td class="tc">${pct(r.kv,avgKV)}</td>
+      <td class="tc">${pct(r.kv,grpAvg)}</td>
+      <td class="tc">${ev}</td>
+    </tr>`;
+  });
+  h+=`</tbody>`;
+  document.getElementById('tbl-kv').innerHTML=h;
+}
+
+// ── TAB: SO SÁNH ─────────────────────────────────────────────
+function renderSS() {
+  const fp=document.getElementById('f-phong-ss').value;
+  const fl=document.getElementById('f-loai-ss').value;
+  let data=DATA.filter(r=>r.dn!=null||r.kv>0);
+  if(fp) data=data.filter(r=>r.phong===fp);
+  if(fl==='ld') data=data.filter(isLD);
+  if(fl==='cb') data=data.filter(r=>!isLD(r));
+  document.getElementById('bench-info-ss').innerHTML=benchInfoHTML(benchSS);
+
+  let h=`<thead><tr><th>Mã CB</th><th style="min-width:130px">Họ &amp; Tên</th><th>Phòng</th><th>Loại</th>
+    <th>DN CK</th><th>BM</th><th>Lệch DN</th>
+    <th>HĐV CK</th><th>BM</th><th>Lệch HĐV</th>
+    <th>TNT (tỷ)</th><th>BM</th><th>Lệch TNT</th>
+    <th>NIM TD TT</th><th>BM</th><th>Lệch NIM TT</th>
+    <th>SL KV</th><th>BM</th><th>Lệch KV</th>
+  </tr></thead><tbody>`;
+  let prevP='';
+  PHONGS.forEach(p=>{
+    if(fp&&p!==fp) return;
+    const rows=data.filter(r=>r.phong===p); if(!rows.length) return;
+    h+=`<tr class="ph-row"><td colspan="16">📌 ${p}</td></tr>`;
+    rows.forEach((r,i)=>{
+      const bm=getBench(benchSS,r);
+      h+=`<tr style="${i%2?'background:var(--alt)':''}">
+        <td>${r.ma}</td><td class="fw">${r.ten}</td><td>${r.phong}</td>
+        <td class="tc"><span class="badge ${isLD(r)?'b-ld':'b-cb'}">${isLD(r)?'👑':'👤'}</span></td>
+        <td class="tr">${naF(r.dn)}</td>
+        <td class="tr" style="color:var(--gray);font-size:11px">${bm.dn?bm.dn.toFixed(0):'—'}</td>
+        <td class="tc">${pct(r.dn,bm.dn)}</td>
+        <td class="tr">${naF(r.hdv)}</td>
+        <td class="tr" style="color:var(--gray);font-size:11px">${bm.hdv?bm.hdv.toFixed(0):'—'}</td>
+        <td class="tc">${pct(r.hdv,bm.hdv)}</td>
+        <td class="tr">${naF(r.tnt,2)}</td>
+        <td class="tr" style="color:var(--gray);font-size:11px">${bm.tnt?bm.tnt.toFixed(2):'—'}</td>
+        <td class="tc">${pct(r.tnt,bm.tnt)}</td>
+        <td class="tc">${nimTTCell(r.nim_tt)}</td>
+        <td class="tc" style="color:var(--gray);font-size:11px">${bm.nim_tt?bm.nim_tt.toFixed(2)+'%':'—'}</td>
+        <td class="tc">${pct(r.nim_tt,bm.nim_tt)}</td>
+        <td class="tc">${r.kv>0?r.kv:'<span class="na">—</span>'}</td>
+        <td class="tc" style="color:var(--gray);font-size:11px">${bm.kv?bm.kv.toFixed(0):'—'}</td>
+        <td class="tc">${pct(r.kv>0?r.kv:null,bm.kv)}</td>
+      </tr>`;
+    });
+  });
+  h+=`</tbody>`;
+  document.getElementById('tbl-ss').innerHTML=h;
+}
+
+// ── TAB: BIỂU ĐỒ ─────────────────────────────────────────────
+function renderBieu() {
+  const s=p=>DATA.filter(r=>r.phong===p);
+  mkChart('c-tnt','bar',{labels:PHONGS,datasets:[{label:'TNT (tỷ)',data:PHONGS.map(p=>sum(s(p),'tnt').toFixed(2)),backgroundColor:'rgba(0,115,107,.8)',borderRadius:4}]},{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+  mkChart('c-nim','bar',{labels:PHONGS,datasets:[
+    {label:'NIM HĐV (%)',data:PHONGS.map(p=>avg(s(p),'nim').toFixed(2)),backgroundColor:'rgba(200,169,81,.8)',borderRadius:4},
+    {label:'NIM TD TT (%)',data:PHONGS.map(p=>avg(s(p),'nim_tt').toFixed(2)),backgroundColor:'rgba(0,115,107,.6)',borderRadius:4}
+  ]},{plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:false}}});
+  mkChart('c-dv','bar',{labels:PHONGS,datasets:[{label:'DV ròng (tr)',data:PHONGS.map(p=>sum(s(p),'dv').toFixed(0)),backgroundColor:'rgba(46,125,114,.8)',borderRadius:4}]},{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+  mkChart('c-phanbo','bar',{labels:PHONGS,datasets:[
+    {label:'Lãnh đạo',data:PHONGS.map(p=>s(p).filter(isLD).length),backgroundColor:'rgba(27,94,84,.85)',borderRadius:4},
+    {label:'Cán bộ',data:PHONGS.map(p=>s(p).filter(r=>!isLD(r)).length),backgroundColor:'rgba(200,169,81,.75)',borderRadius:4}
+  ]},{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
+  const topHDV=[...DATA].filter(r=>r.hdv!=null&&r.hdv>0).sort((a,b)=>b.hdv-a.hdv).slice(0,10);
+  mkChart('c-top-dn','bar',{
+    labels:topHDV.map(r=>r.ten.split(' ').slice(-2).join(' ')),
+    datasets:[{label:'HĐV (tỷ)',data:topHDV.map(r=>r.hdv),backgroundColor:topHDV.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(200,169,81,.8)'),borderRadius:4}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
+  const topTNT=[...DATA].filter(r=>r.tnt!=null&&r.tnt>0).sort((a,b)=>b.tnt-a.tnt).slice(0,10);
+  mkChart('c-top-tnt','bar',{
+    labels:topTNT.map(r=>r.ten.split(' ').slice(-2).join(' ')),
+    datasets:[{label:'TNT (tỷ)',data:topTNT.map(r=>r.tnt.toFixed(2)),backgroundColor:topTNT.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(46,125,114,.75)'),borderRadius:4}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
+  const topDV=[...DATA].filter(r=>r.dv!=null&&r.dv>0).sort((a,b)=>b.dv-a.dv).slice(0,10);
+  mkChart('c-top-dv','bar',{
+    labels:topDV.map(r=>r.ten.split(' ').slice(-2).join(' ')),
+    datasets:[{label:'DV ròng (tr)',data:topDV.map(r=>r.dv),backgroundColor:topDV.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(0,150,136,.75)'),borderRadius:4}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
+  const topDN2=[...DATA].filter(r=>r.dn!=null&&r.dn>0).sort((a,b)=>b.dn-a.dn).slice(0,10);
+  mkChart('c-top-dn2','bar',{
+    labels:topDN2.map(r=>r.ten.split(' ').slice(-2).join(' ')),
+    datasets:[{label:'DN (tỷ)',data:topDN2.map(r=>r.dn),backgroundColor:topDN2.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(0,150,136,.75)'),borderRadius:4}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
+}
+
+function mkChart(id, type, data, opts) {
+  if(CHARTS[id]) { CHARTS[id].destroy(); delete CHARTS[id]; }
+  const el=document.getElementById(id); if(!el) return;
+  CHARTS[id]=new Chart(el, {type, data, options:{responsive:true, ...opts}});
+}
+
+// ── IMPORT ───────────────────────────────────────────────────
+const IMP = {files:{}, raw:{}, merged:[]};
+const LD_CVS_NORM = LD_CVS.map(s=>s.toLowerCase());
+const PHONG_BL_NORM = ['phòng khách hàng cá nhân','phòng giao dịch lương định của','phòng giao dịch nam cao','phòng giao dịch hào nam','phòng giao dịch west lake','phòng giao dịch khách hàng'];
+const PHONG_SHORT_MAP = {'phòng khách hàng cá nhân':'P. KHCN','phòng giao dịch lương định của':'PGD Lương Định Của','phòng giao dịch nam cao':'PGD Nam Cao','phòng giao dịch hào nam':'PGD Hào Nam','phòng giao dịch west lake':'PGD West Lake','phòng giao dịch khách hàng':'P. GD KH'};
+
+function fDrag(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function fLeave(id){document.getElementById(id).classList.remove('drag');}
+function fDrop(e,id,idx){e.preventDefault();document.getElementById(id).classList.remove('drag');fProcess(e.dataTransfer.files[0],idx);}
+function fHandle(e,idx){fProcess(e.target.files[0],idx);}
+function fProcess(file, idx) {
+  if(!file) return;
+  IMP.files[idx]=file;
+  const z=document.getElementById('fz'+idx);
+  z.classList.add('loaded');
+  z.querySelector('.fzone-icon').textContent='✅';
+  z.querySelector('.fzone-hint').classList.add('hidden');
+  const fn=document.getElementById('fn'+idx);
+  fn.textContent=file.name+' ('+(file.size/1024).toFixed(0)+' KB)';
+  fn.classList.remove('hidden');
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      IMP.raw[idx]=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:null});
+      document.getElementById('imp-next1').disabled=Object.keys(IMP.raw).length<1;
+    }catch(e){alert('Không đọc được file. Vui lòng kiểm tra lại.');}
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function iStep(n) {
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('ip'+i).classList.toggle('hidden',i!==n);
+    const s=document.getElementById('is'+i);
+    s.classList.remove('active','done');
+    if(i<n) s.classList.add('done');
+    else if(i===n) s.classList.add('active');
+  });
+  if(n===2) iBuildMap();
+  if(n===3) iBuildPreview();
+  if(n===4) iApply();
+}
+
+function iBuildMap() {
+  let h='';
+  Object.keys(IMP.raw).forEach(idx=>{
+    const rows=IMP.raw[idx], cols=rows.length?Object.keys(rows[0]):[];
+    const labels={1:['Mã cán bộ','Dư nợ tín dụng cuối kỳ','Huy động vốn cuối kỳ','Thu nhập thuần từ dịch vụ','Thu nhập thuần','Nim huy động vốn'],
+                  2:['Mã cán bộ','SL Khoản vay'],3:['Mã CB','Tên CB','Chức vụ','Phòng']};
+    h+=`<p style="font-size:11px;font-weight:700;color:var(--gray);margin:${idx>1?'12px':'0'} 0 6px">File ${idx}: ${rows.length} dòng</p>`;
+    (labels[idx]||[]).forEach(c=>{
+      const matched=cols.find(col=>col.toLowerCase().includes(c.toLowerCase().split(' ')[0]))||'';
+      h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px">
+        <span style="width:190px;color:var(--gray);flex-shrink:0">${c}</span>
+        <select style="flex:1;font-size:11px;border:1px solid var(--border);border-radius:5px;padding:4px 7px" id="mp-${idx}-${c.replace(/\W/g,'_')}">
+          <option value="">—</option>${cols.map(col=>`<option value="${col}"${col===matched?' selected':''}>${col}</option>`).join('')}
+        </select>
+        <span style="font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700;background:${matched?'var(--green-l)':'#FFF3E0'};color:${matched?'var(--green)':'var(--orange)'}">${matched?'✓ OK':'?'}</span>
+      </div>`;
+    });
+  });
+  document.getElementById('imp-map').innerHTML=h;
+}
+
+function iBuildPreview() {
+  const logs=[], cb3=IMP.raw[3]||[], qm1=IMP.raw[1]||[], kv2=IMP.raw[2]||[];
+  const gStr=v=>v!=null?String(v).trim():'';
+  const findV=(row,hint)=>{const k=Object.keys(row||{}).find(c=>c.toLowerCase().includes(hint));return k?row[k]:null;};
+
+  let bl=[];
+  if(cb3.length){
+    const s=cb3[0], mk=Object.keys(s).find(k=>k.toLowerCase().includes('mã')||k.toLowerCase().includes('ma cb'));
+    const tk=Object.keys(s).find(k=>k.toLowerCase().includes('tên')||k.toLowerCase().includes('ten'));
+    const ck=Object.keys(s).find(k=>k.toLowerCase().includes('chức')||k.toLowerCase().includes('chuc'));
+    const pk=Object.keys(s).find(k=>k.toLowerCase().includes('phòng')||k.toLowerCase().includes('phong'));
+    cb3.forEach(r=>{
+      const ph=gStr(r[pk]).toLowerCase().replace(/\s+/g,' ');
+      const phShort=PHONG_BL_NORM.find(p=>ph===p||ph.includes(p.split(' ').slice(-2).join(' ').toLowerCase()));
+      if(!phShort) return;
+      bl.push({ma:gStr(r[mk]),ten:gStr(r[tk]),cv:gStr(r[ck]),phong:PHONG_SHORT_MAP[phShort]||gStr(r[pk])});
+    });
+    logs.push(`<span class="ok">✓ File CB: ${cb3.length} dòng → ${bl.length} CB bán lẻ</span>`);
+  } else {
+    bl=DATA.map(r=>({ma:r.ma,ten:r.ten,cv:r.chucvu,phong:r.phong}));
+    logs.push('<span class="warn">⚠ Không có file CB, dùng danh sách hiện tại</span>');
+  }
+
+  const kvMap={};
+  kv2.forEach(r=>{
+    const ma=gStr(findV(r,'mã cán')||findV(r,'ma can')||findV(r,'ma cb')||'');
+    const kv=parseFloat(findV(r,'sl khoản')||findV(r,'sl khoan')||findV(r,'sl ')||0)||0;
+    if(ma&&ma!=='nan') kvMap[ma]=(kvMap[ma]||0)+kv;
+  });
+  if(kv2.length) logs.push(`<span class="ok">✓ File KV: ${kv2.length} dòng → ${Object.keys(kvMap).length} CB</span>`);
+
+  const qmMap={};
+  qm1.forEach(r=>{
+    const ma=gStr(findV(r,'mã cán')||findV(r,'ma can')||findV(r,'mã cb')||'');
+    if(!ma||ma==='nan') return;
+    if(!qmMap[ma]) qmMap[ma]={dn:0,hdv:0,tdv:0,tnt:0,nims:[],nimt:[],nimtt:[]};
+    qmMap[ma].dn +=(parseFloat(findV(r,'nợ tín dụng cuối')||findV(r,'du no cuoi')||0)||0);
+    qmMap[ma].hdv+=(parseFloat(findV(r,'huy động vốn cuối')||findV(r,'hdv cuoi')||0)||0);
+    qmMap[ma].tdv+=(parseFloat(findV(r,'dịch vụ')||findV(r,'dich vu')||findV(r,'thu nhap thuan tu')||0)||0);
+    qmMap[ma].tnt+=(parseFloat(findV(r,'thu nhập thuần')||findV(r,'thu nhap thuan ')||0)||0);
+    const n=parseFloat(findV(r,'nim huy')||0); if(n) qmMap[ma].nims.push(n);
+    const nt=parseFloat(findV(r,'nim tín dụng danh')||0); if(nt) qmMap[ma].nimt.push(nt);
+    const ntt=parseFloat(findV(r,'nim tín dụng thực')||0); if(ntt) qmMap[ma].nimtt.push(ntt);
+  });
+  if(qm1.length) logs.push(`<span class="ok">✓ File QM: ${qm1.length} dòng → ${Object.keys(qmMap).length} CB</span>`);
+
+  const merged=bl.map(cb=>{
+    const qm=qmMap[cb.ma], kv=kvMap[cb.ma]||0;
+    const ldFlag=LD_CVS_NORM.some(c=>cb.cv.toLowerCase()===c);
+    return {
+      ma:cb.ma, ten:cb.ten, phong:cb.phong, chucvu:cb.cv,
+      loai:ldFlag?'Lãnh đạo (TP/PTP/GĐ/PGĐ)':'Cán bộ',
+      dn: qm?+((qm.dn/1e9).toFixed(1)):null,
+      hdv:qm?+((qm.hdv/1e9).toFixed(1)):null,
+      tnt:qm?+((qm.tnt/1e9).toFixed(2)):null,
+      dv: qm?+((qm.tdv/1e6).toFixed(0)):null,
+      nim:qm&&qm.nims.length?+(qm.nims.reduce((a,v)=>a+v,0)/qm.nims.length).toFixed(2):null,
+      nim_td:qm&&qm.nimt.length?+(qm.nimt.reduce((a,v)=>a+v,0)/qm.nimt.length).toFixed(2):null,
+      nim_tt:qm&&qm.nimtt.length?+(qm.nimtt.reduce((a,v)=>a+v,0)/qm.nimtt.length).toFixed(2):null,
+      kv
+    };
+  });
+  IMP.merged=merged;
+  const hasQM=merged.filter(r=>r.dn!=null).length, hasKV=merged.filter(r=>r.kv>0).length;
+  if(merged.length-hasQM>0) logs.push(`<span class="warn">⚠ ${merged.length-hasQM} CB chưa có dữ liệu QM</span>`);
+  logs.push(`<span class="ok">✓ Sẵn sàng: ${merged.length} CB | ${hasQM} có QM | ${hasKV} có KV</span>`);
+
+  document.getElementById('imp-prev-stats').innerHTML=[
+    {v:merged.length,l:'Tổng CB'},{v:merged.filter(isLD).length,l:'Lãnh đạo'},
+    {v:hasQM,l:'Có QM'},{v:hasKV,l:'Có KV'}
+  ].map(s=>`<div class="stat-box"><div class="stat-v">${s.v}</div><div class="stat-l">${s.l}</div></div>`).join('');
+
+  let t=`<div class="prev-tbl-wrap"><table class="prev-tbl"><thead><tr>
+    <th>Mã</th><th>Họ &amp; Tên</th><th>Phòng</th><th>Loại</th>
+    <th>DN (tỷ)</th><th>HĐV (tỷ)</th><th>NIM HĐV</th><th>SL KV</th>
+  </tr></thead><tbody>`;
+  merged.slice(0,6).forEach(r=>{
+    t+=`<tr><td>${r.ma}</td><td>${r.ten}</td><td style="font-size:10px">${r.phong}</td>
+    <td><span class="badge ${isLD(r)?'b-ld':'b-cb'}" style="font-size:9px">${isLD(r)?'LD':'CB'}</span></td>
+    <td>${r.dn!=null?r.dn:'<span class="na">—</span>'}</td>
+    <td>${r.hdv!=null?r.hdv:'<span class="na">—</span>'}</td>
+    <td>${r.nim!=null?r.nim+'%':'<span class="na">—</span>'}</td>
+    <td>${r.nim_tt!=null?r.nim_tt+'%':'<span class="na">—</span>'}</td>
+    <td>${r.kv>0?r.kv:'<span class="na">—</span>'}</td></tr>`;
+  });
+  if(merged.length>6) t+=`<tr><td colspan="9" style="text-align:center;color:var(--gray);font-style:italic;font-size:11px">... và ${merged.length-6} dòng khác</td></tr>`;
+  t+=`</tbody></table></div>`;
+  document.getElementById('imp-prev-tbl').innerHTML=t;
+  document.getElementById('imp-log').innerHTML=logs.join('<br>');
+}
+
+function iApply() {
+  if(!IMP.merged.length) return;
+  DATA=filterExclude(JSON.parse(JSON.stringify(IMP.merged)));
+  bieuRendered=false;
+
+  // Update header
+  document.getElementById('src-badge').textContent='📥 Dữ liệu đã import';
+  document.getElementById('src-badge').className='data-badge badge-import';
+  document.getElementById('period-badge').textContent=DATA.length+' Cán bộ';
+
+  // Rebuild all filters
+  ['f-phong-cb','f-phong-ss'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML='<option value="">Tất cả</option>';
+    PHONGS.filter(p=>DATA.some(r=>r.phong===p)).forEach(p=>{
+      const o=document.createElement('option'); o.value=p; o.text=p; el.appendChild(o);
+    });
+  });
+
+  renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+
+  const hasQM=DATA.filter(r=>r.dn!=null).length;
+  document.getElementById('imp-done-msg').textContent=`${DATA.length} CB đã được load. ${hasQM} CB có dữ liệu Quy mô & Hiệu quả.`;
+  document.getElementById('imp-done-stats').innerHTML=[
+    {v:DATA.length,l:'CB bán lẻ'},{v:DATA.filter(isLD).length,l:'Lãnh đạo'},
+    {v:hasQM,l:'Có dữ liệu QM'},{v:sum(DATA,'kv'),l:'Tổng SL KV'}
+  ].map(s=>`<div class="stat-box"><div class="stat-v">${s.v}</div><div class="stat-l">${s.l}</div></div>`).join('');
+}
+
+function iReset() {
+  IMP.files={}; IMP.raw={}; IMP.merged=[];
+  [1,2,3].forEach(i=>{
+    const z=document.getElementById('fz'+i);
+    z.classList.remove('loaded','drag');
+    z.querySelector('.fzone-icon').textContent=['📊','📈','👥'][i-1];
+    z.querySelector('.fzone-hint').classList.remove('hidden');
+    document.getElementById('fn'+i).classList.add('hidden');
+    document.getElementById('fi'+i).value='';
+  });
+  document.getElementById('imp-next1').disabled=true;
+  iStep(1);
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+PHONGS.forEach(p=>{
+  ['f-phong-cb','f-phong-ss'].forEach(id=>{
+    const o=document.createElement('option'); o.value=p; o.text=p;
+    document.getElementById(id).appendChild(o);
+  });
+});
+renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
+document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
+document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
+document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
+</script>
+
+<!-- PDF BAR -->
+<div class="pdf-bar" id="pdf-bar">
+  <span class="pdf-bar-title">📄 Xuất PDF:</span>
+  <label class="pdf-opt"><input type="checkbox" id="pdf-tq" checked> Tổng Quan</label>
+  <label class="pdf-opt"><input type="checkbox" id="pdf-ld" checked> Lãnh Đạo</label>
+  <label class="pdf-opt"><input type="checkbox" id="pdf-cb" checked> Cán Bộ</label>
+  <label class="pdf-opt"><input type="checkbox" id="pdf-kv" checked> Khoản Vay</label>
+  <label class="pdf-opt"><input type="checkbox" id="pdf-ss" checked> So Sánh</label>
+  <label class="pdf-opt"><input type="checkbox" id="pdf-bieu" checked> Biểu Đồ</label>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+    <span class="pdf-progress" id="pdf-prog">⏳ Đang xuất...</span>
+    <button class="btn-pdf" id="btn-pdf-all" onclick="exportPDF()">⬇ Xuất tất cả tab (PDF)</button>
+    <button class="btn-pdf" onclick="exportCurrentTab()" id="btn-pdf-cur">⬇ Xuất tab hiện tại</button>
+  </div>
+</div>
+
+
+<script>
+// ── PDF EXPORT ────────────────────────────────────────────────
+const TAB_IDS  = ['tq','ld','cb','kv','ss','bieu'];
+const TAB_NAMES= ['Tổng Quan','Lãnh Đạo','Cán Bộ','Khoản Vay','So Sánh','Biểu Đồ'];
+let currentTabId = 'tq';
+
+// Track current tab
+const _origGTab = gTab;
+// Override gTab to track current
+function gTab(id, el){
+  _origGTab(id, el);
+  currentTabId = id;
+}
+
+async function captureTab(tabId) {
+  // Activate tab silently
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  // Render biểu đồ nếu chưa
+  if (tabId === 'bieu' && !bieuRendered) { renderBieu(); bieuRendered = true; }
+  // Wait for render
+  await new Promise(r => setTimeout(r, 350));
+
+  const panel = document.getElementById('tab-' + tabId);
+  const canvas = await html2canvas(panel, {
+    scale: 1.6,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#EEF2F1',
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: document.documentElement.scrollWidth,
+    ignoreElements: el => el.classList.contains('pdf-bar') || el.classList.contains('tabs') || el.classList.contains('hdr')
+  });
+  return canvas;
+}
+
+async function exportPDF() {
+  const btn = document.getElementById('btn-pdf-all');
+  const prog = document.getElementById('pdf-prog');
+  btn.disabled = true;
+  prog.classList.add('show');
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
+  const PW = pdf.internal.pageSize.getWidth();
+  const PH = pdf.internal.pageSize.getHeight();
+  const MARGIN = 8;
+
+  const selected = TAB_IDS.filter(id => {
+    const el = document.getElementById('pdf-' + id);
+    return el && el.checked;
+  });
+
+  const saved = currentTabId;
+  let first = true;
+
+  for (let i = 0; i < selected.length; i++) {
+    const id = selected[i];
+    const name = TAB_NAMES[TAB_IDS.indexOf(id)];
+    prog.textContent = `⏳ Đang xuất: ${name} (${i+1}/${selected.length})…`;
+
+    if (!first) pdf.addPage();
+    first = false;
+
+    // Header bar on each page
+    pdf.setFillColor(0, 77, 70);
+    pdf.rect(0, 0, PW, 12, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica','bold');
+    pdf.text('BIDV TRÀNG TIỀN – DASHBOARD ĐÁNH GIÁ CÁN BỘ KHỐI BÁN LẺ', MARGIN, 8);
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(8);
+    pdf.text(name.toUpperCase(), PW - MARGIN, 8, { align: 'right' });
+
+    // Capture tab
+    try {
+      const canvas = await captureTab(id);
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const imgW = PW - MARGIN * 2;
+      const imgH = (canvas.height / canvas.width) * imgW;
+
+      // If content taller than page, split into multiple pages
+      const availH = PH - 14 - MARGIN;
+      if (imgH <= availH) {
+        pdf.addImage(imgData, 'JPEG', MARGIN, 13, imgW, imgH);
+      } else {
+        // Multi-page: slice canvas vertically
+        const sliceH = Math.floor((availH / imgH) * canvas.height);
+        let yOffset = 0;
+        let pageInTab = 0;
+        while (yOffset < canvas.height) {
+          if (pageInTab > 0) {
+            pdf.addPage();
+            pdf.setFillColor(0, 77, 70);
+            pdf.rect(0, 0, PW, 12, 'F');
+            pdf.setTextColor(255,255,255);
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica','bold');
+            pdf.text('BIDV TRÀNG TIỀN – ' + name.toUpperCase() + ' (tiếp)', MARGIN, 8);
+          }
+          const sliceCanvas = document.createElement('canvas');
+          const actualSlice = Math.min(sliceH, canvas.height - yOffset);
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = actualSlice;
+          const ctx = sliceCanvas.getContext('2d');
+          ctx.drawImage(canvas, 0, yOffset, canvas.width, actualSlice, 0, 0, canvas.width, actualSlice);
+          const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+          const sliceImgH = (actualSlice / canvas.width) * imgW;
+          pdf.addImage(sliceData, 'JPEG', MARGIN, 13, imgW, sliceImgH);
+          yOffset += actualSlice;
+          pageInTab++;
+        }
+      }
+    } catch(e) {
+      pdf.setTextColor(200,0,0);
+      pdf.text('Lỗi xuất tab: ' + e.message, MARGIN, 40);
+    }
+
+    // Footer
+    pdf.setTextColor(120,120,120);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica','normal');
+    const today = new Date().toLocaleDateString('vi-VN');
+    pdf.text('Xuất ngày: ' + today + '  |  Trang ' + pdf.internal.getNumberOfPages(), PW/2, PH - 3, {align:'center'});
+  }
+
+  // Restore active tab
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + saved).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  const today2 = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  pdf.save('BIDV_TrangTien_DanhGia_CB_' + today2 + '.pdf');
+
+  btn.disabled = false;
+  prog.textContent = '✅ Xuất xong!';
+  setTimeout(() => { prog.textContent = ''; prog.classList.remove('show'); }, 3000);
+}
+
+async function exportCurrentTab() {
+  const btn = document.getElementById('btn-pdf-cur');
+  const prog = document.getElementById('pdf-prog');
+  btn.disabled = true;
+  prog.classList.add('show');
+  prog.textContent = '⏳ Đang xuất tab hiện tại…';
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
+    const PW = pdf.internal.pageSize.getWidth();
+    const PH = pdf.internal.pageSize.getHeight();
+    const MARGIN = 8;
+    const tabName = TAB_NAMES[TAB_IDS.indexOf(currentTabId)] || currentTabId;
+
+    pdf.setFillColor(0, 77, 70);
+    pdf.rect(0, 0, PW, 12, 'F');
+    pdf.setTextColor(255,255,255);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica','bold');
+    pdf.text('BIDV TRÀNG TIỀN – DASHBOARD ĐÁNH GIÁ CÁN BỘ KHỐI BÁN LẺ', MARGIN, 8);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica','normal');
+    pdf.text(tabName.toUpperCase(), PW - MARGIN, 8, {align:'right'});
+
+    const canvas = await captureTab(currentTabId);
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const imgW = PW - MARGIN*2;
+    const imgH = (canvas.height/canvas.width)*imgW;
+    const availH = PH - 14 - MARGIN;
+
+    if (imgH <= availH) {
+      pdf.addImage(imgData, 'JPEG', MARGIN, 13, imgW, imgH);
+    } else {
+      const sliceH = Math.floor((availH/imgH)*canvas.height);
+      let yOffset = 0, pg = 0;
+      while (yOffset < canvas.height) {
+        if (pg > 0) {
+          pdf.addPage();
+          pdf.setFillColor(0,77,70); pdf.rect(0,0,PW,12,'F');
+          pdf.setTextColor(255,255,255); pdf.setFontSize(8);
+          pdf.text('BIDV TRÀNG TIỀN – '+tabName.toUpperCase()+' (tiếp)', MARGIN, 8);
+        }
+        const sc = document.createElement('canvas');
+        const sh = Math.min(sliceH, canvas.height-yOffset);
+        sc.width = canvas.width; sc.height = sh;
+        sc.getContext('2d').drawImage(canvas, 0, yOffset, canvas.width, sh, 0, 0, canvas.width, sh);
+        pdf.addImage(sc.toDataURL('image/jpeg',0.92), 'JPEG', MARGIN, 13, imgW, (sh/canvas.width)*imgW);
+        yOffset += sh; pg++;
+      }
+    }
+
+    pdf.setTextColor(120,120,120); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+    pdf.text('Xuất ngày: '+new Date().toLocaleDateString('vi-VN')+'  |  Trang '+pdf.internal.getNumberOfPages(), PW/2, PH-3, {align:'center'});
+
+    const today2 = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    pdf.save('BIDV_TrangTien_'+tabName+'_'+today2+'.pdf');
+
+    prog.textContent = '✅ Xuất xong!';
+  } catch(e) {
+    prog.textContent = '❌ Lỗi: ' + e.message;
+  }
+
+  btn.disabled = false;
+  setTimeout(() => { prog.textContent=''; prog.classList.remove('show'); }, 3000);
+}
+</script>
+
+</body>
+</html>
