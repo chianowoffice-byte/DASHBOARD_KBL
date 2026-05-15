@@ -504,11 +504,13 @@ function hiliteBench(btn) {
 
 // ── TAB SWITCH ────────────────────────────────────────────────
 let bieuRendered = false;
+let currentTabId = 'tq';
 function gTab(id, el) {
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   if (el) { document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); }
   if (id==='bieu' && !bieuRendered) { renderBieu(); bieuRendered=true; }
+  currentTabId = id;
 }
 
 // ── TAB: TỔNG QUAN ────────────────────────────────────────────
@@ -1074,15 +1076,6 @@ document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
 // ── PDF EXPORT ────────────────────────────────────────────────
 const TAB_IDS  = ['tq','ld','cb','kv','ss','bieu'];
 const TAB_NAMES= ['Tổng Quan','Lãnh Đạo','Cán Bộ','Khoản Vay','So Sánh','Biểu Đồ'];
-let currentTabId = 'tq';
-
-// Track current tab
-const _origGTab = gTab;
-// Override gTab to track current
-function gTab(id, el){
-  _origGTab(id, el);
-  currentTabId = id;
-}
 
 async function captureTab(tabId) {
   // Activate tab silently
