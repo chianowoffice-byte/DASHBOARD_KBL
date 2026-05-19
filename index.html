@@ -352,6 +352,80 @@ canvas{max-height:260px}
         <span style="font-size:11px;color:var(--gray)">Ngày này sẽ hiển thị trên header Dashboard sau khi import</span>
         <span id="imp-date-preview" style="font-size:11px;font-weight:700;color:var(--teal);display:none"></span>
       </div>
+
+      <!-- GOOGLE SHEET SECTION -->
+      <div id="gs-section" style="background:var(--teal-l);border:1px solid var(--teal-m);border-radius:8px;padding:12px 14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:700;color:var(--teal-d)">📊 Kết nối Google Sheet</span>
+          <span style="font-size:10px;background:var(--green);color:#fff;padding:2px 8px;border-radius:8px;font-weight:700">Khuyên dùng</span>
+          <button onclick="toggleGSSection()" id="gs-toggle-btn"
+            style="margin-left:auto;font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--gray)">
+            Ẩn
+          </button>
+        </div>
+        <div id="gs-body">
+          <p style="font-size:11px;color:var(--gray);margin-bottom:8px">
+            URL 3 Google Sheet đã được cấu hình sẵn. Chỉ cần đảm bảo Sheet ở chế độ
+            <b style="color:var(--teal-d)">"Bất kỳ ai có link → Người xem"</b> rồi nhấn <b>Đồng bộ</b>.
+          </p>
+          <div style="background:#FFF8E1;border-left:3px solid var(--gold);padding:6px 10px;border-radius:0 5px 5px 0;margin-bottom:10px;font-size:11px;color:#5D4037">
+            ⚠️ <b>Lưu ý:</b> Nếu chưa chia sẻ công khai, mở Google Sheet → <b>Chia sẻ</b> → <b>Thay đổi thành bất kỳ ai có đường liên kết</b> → <b>Người xem</b> → Sao chép liên kết.
+          </div>
+          <div style="display:grid;gap:8px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:700;color:var(--teal-d);width:180px;flex-shrink:0">📊 SO LIEU CAN BO - KBL:</span>
+              <input id="gs-url-1" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1CQJ45zrm3HUH-rkR6RRQwO7WPZk2IphD8-3_-T4_-Jw/edit" 
+                style="flex:1;font-size:11px;padding:6px 10px;border:1px solid var(--border);border-radius:5px"
+                onpaste="setTimeout(()=>validateGSUrl('gs-url-1','gs-status-1'),100)"
+                oninput="validateGSUrl('gs-url-1','gs-status-1')">
+              <span id="gs-status-1" style="font-size:11px;width:60px;text-align:center"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:700;color:var(--teal-d);width:180px;flex-shrink:0">📈 SO LUONG KHOAN VAY - KBL:</span>
+              <input id="gs-url-2" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1n1VGlO5626-sF4ziV7NIGGch6FvaQEfipT5JTosrueM/edit"
+                style="flex:1;font-size:11px;padding:6px 10px;border:1px solid var(--border);border-radius:5px"
+                onpaste="setTimeout(()=>validateGSUrl('gs-url-2','gs-status-2'),100)"
+                oninput="validateGSUrl('gs-url-2','gs-status-2')">
+              <span id="gs-status-2" style="font-size:11px;width:60px;text-align:center"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:700;color:var(--teal-d);width:180px;flex-shrink:0">👥 DU LIEU CAN BO:</span>
+              <input id="gs-url-3" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1lJnc2fYyhXq9GLKsU5mF1HkAqoAgustLduYditJ1AmQ/edit"
+                style="flex:1;font-size:11px;padding:6px 10px;border:1px solid var(--border);border-radius:5px"
+                onpaste="setTimeout(()=>validateGSUrl('gs-url-3','gs-status-3'),100)"
+                oninput="validateGSUrl('gs-url-3','gs-status-3')">
+              <span id="gs-status-3" style="font-size:11px;width:60px;text-align:center"></span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button onclick="syncGoogleSheets()" id="gs-sync-btn"
+              style="background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer">
+              🔄 Đồng bộ từ Google Sheet
+            </button>
+            <button onclick="saveGSUrls()" 
+              style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;color:var(--gray)">
+              💾 Lưu URL
+            </button>
+            <button onclick="clearGSUrls()"
+              style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;color:var(--gray)">
+              🗑 Xóa URL
+            </button>
+            <span id="gs-sync-status" style="font-size:11px;font-weight:700;color:var(--teal)"></span>
+          </div>
+          <div id="gs-progress" style="display:none;margin-top:8px">
+            <div style="background:var(--teal-m);border-radius:4px;height:6px;overflow:hidden">
+              <div id="gs-prog-bar" style="background:var(--teal);height:100%;width:0%;transition:width .3s"></div>
+            </div>
+            <p id="gs-prog-text" style="font-size:10px;color:var(--gray);margin-top:4px"></p>
+          </div>
+        </div>
+      </div>
+      <!-- SEPARATOR -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:11px;color:var(--gray);white-space:nowrap">hoặc upload file từ máy tính</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
       <div class="file-grid">
         <div>
           <p style="font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600">1 · Quy mô &amp; Hiệu quả</p>
@@ -425,9 +499,14 @@ canvas{max-height:260px}
       <p style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px">Dashboard đã cập nhật!</p>
       <p style="font-size:12px;color:var(--gray);margin-bottom:16px" id="imp-done-msg"></p>
       <div class="stat-row" id="imp-done-stats" style="justify-content:center;max-width:380px;margin:0 auto 16px"></div>
-      <div style="display:flex;gap:10px;justify-content:center">
+      <div style="background:#E3F2FD;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:12px;color:#0D47A1;text-align:left;max-width:420px;margin-left:auto;margin-right:auto">
+        <b>💾 Để lưu dữ liệu vĩnh viễn:</b><br>
+        Nhấn nút <b>"Lưu dữ liệu mới (HTML)"</b> ở thanh dưới cùng → tải file về → đổi tên thành <code>index.html</code> → upload lên GitHub/Netlify để mọi thiết bị thấy dữ liệu mới.
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="gTab('tq',null);document.querySelectorAll('.tab')[0].click()">📊 Xem Tổng Quan</button>
-        <button class="btn btn-secondary" onclick="iReset()">🔄 Import bộ dữ liệu khác</button>
+        <button class="btn btn-primary" onclick="exportUpdatedHTML()" style="background:#1565C0;border-color:#1565C0;color:#fff">💾 Lưu dữ liệu mới (HTML)</button>
+        <button class="btn btn-secondary" onclick="iReset()">🔄 Import bộ khác</button>
       </div>
     </div>
   </div>
@@ -874,8 +953,24 @@ function updateDateBadge(){
   prev.style.display = 'inline';
 }
 const LD_CVS_NORM = LD_CVS.map(s=>s.toLowerCase());
-const PHONG_BL_NORM = ['phòng khách hàng cá nhân','phòng giao dịch lương định của','phòng giao dịch nam cao','phòng giao dịch hào nam','phòng giao dịch west lake','phòng giao dịch khách hàng'];
-const PHONG_SHORT_MAP = {'phòng khách hàng cá nhân':'P. KHCN','phòng giao dịch lương định của':'PGD Lương Định Của','phòng giao dịch nam cao':'PGD Nam Cao','phòng giao dịch hào nam':'PGD Hào Nam','phòng giao dịch west lake':'PGD West Lake','phòng giao dịch khách hàng':'P. GD KH'};
+const PHONG_BL_NORM = [
+  'phòng khách hàng cá nhân',
+  'phòng giao dịch lương định của',
+  'phòng giao dịch nam cao',
+  'phòng giao dịch hào nam',
+  'phòng giao dịch west lake',
+  'phòng giao dịch khách hàng'
+];
+// Loại trừ Khối Bán buôn
+const PHONG_EXCLUDE = ['khách hàng doanh nghiệp','khdn','khoibanbuon'];
+const PHONG_SHORT_MAP = {
+  'phòng khách hàng cá nhân':          'P. KHCN',
+  'phòng giao dịch lương định của':    'PGD Lương Định Của',
+  'phòng giao dịch nam cao':           'PGD Nam Cao',
+  'phòng giao dịch hào nam':           'PGD Hào Nam',
+  'phòng giao dịch west lake':         'PGD West Lake',
+  'phòng giao dịch khách hàng':        'P. GD KH'
+};
 
 function fDrag(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
 function fLeave(id){document.getElementById(id).classList.remove('drag');}
@@ -924,8 +1019,8 @@ function iBuildMap() {
          'Cột G – DV ròng','Cột H – Thu nhập thuần','Cột I – NIM HĐV (%)','Cột J – NIM TD danh nghĩa','Cột K – NIM TD thực tế'],
       2:['Mã cán bộ','SL Khoản vay'],
       3:['Mã CB','Tên CB','Chức vụ','Phòng']};
-    var fileLabels = {1:'File 1 – Quy mô & Hiệu quả (đọc cột cố định B,C,E,G,H,I,J,K)',
-                        2:'File 2 – Số lượng Khoản vay', 3:'File 3 – Danh sách Cán bộ'};
+    var fileLabels = {1:'SO LIEU CAN BO - KBL (cột B=Mã, C=DN, E=HĐV, G=DV, H=TNT, I=NIM HĐV, J=NIM DN, K=NIM TT)',
+                        2:'SO LUONG KHOAN VAY - KBL (cột C=Mã CB, B=SL Khoản vay)', 3:'DU LIEU CAN BO (cột A=Mã, B=Tên, C=Chức vụ, D=Phòng)'};
     h+=`<p style="font-size:11px;font-weight:700;color:var(--gray);margin:${idx>1?'12px':'0'} 0 6px">${fileLabels[idx]||('File '+idx)}: ${rows.length} dòng</p>`;
     (labels[idx]||[]).forEach(c=>{
       const matched=cols.find(col=>col.toLowerCase().includes(c.toLowerCase().split(' ')[0]))||'';
@@ -948,29 +1043,54 @@ function iBuildPreview() {
 
   let bl=[];
   if(cb3.length){
-    const s=cb3[0], mk=Object.keys(s).find(k=>k.toLowerCase().includes('mã')||k.toLowerCase().includes('ma cb'));
-    const tk=Object.keys(s).find(k=>k.toLowerCase().includes('tên')||k.toLowerCase().includes('ten'));
-    const ck=Object.keys(s).find(k=>k.toLowerCase().includes('chức')||k.toLowerCase().includes('chuc'));
-    const pk=Object.keys(s).find(k=>k.toLowerCase().includes('phòng')||k.toLowerCase().includes('phong'));
-    cb3.forEach(r=>{
-      const ph=gStr(r[pk]).toLowerCase().replace(/\s+/g,' ');
-      const phShort=PHONG_BL_NORM.find(p=>ph===p||ph.includes(p.split(' ').slice(-2).join(' ').toLowerCase()));
-      if(!phShort) return;
-      bl.push({ma:gStr(r[mk]),ten:gStr(r[tk]),cv:gStr(r[ck]),phong:PHONG_SHORT_MAP[phShort]||gStr(r[pk])});
-    });
-    logs.push(`<span class="ok">✓ File CB: ${cb3.length} dòng → ${bl.length} CB bán lẻ</span>`);
+    // Cột cố định: A(0)=MaCB, B(1)=TenCB, C(2)=ChucVu, D(3)=Phong
+    // Bỏ qua hàng header (hàng đầu có chữ, không phải số)
+    var cbStart = 0;
+    var firstRow = Object.values(cb3[0]);
+    var firstVal = gStr(firstRow[0]);
+    if(isNaN(parseFloat(firstVal)) && firstVal !== '') cbStart = 1;
+
+    for(var ci = cbStart; ci < cb3.length; ci++){
+      var crow = Object.values(cb3[ci]);
+      var ma  = gStr(crow[0]);  // A
+      var ten = gStr(crow[1]);  // B
+      var cv  = gStr(crow[2]);  // C
+      var ph  = gStr(crow[3]).toLowerCase().replace(/\s+/g,' ');  // D
+
+      if(!ma || !ten) continue;
+
+      // Kiểm tra có phải KBL không
+      var isKBN = PHONG_EXCLUDE.some(function(e){ return ph.includes(e); });
+      if(isKBN) continue;
+
+      // Map tên phòng → short name
+      var phShort = null;
+      for(var pkey in PHONG_SHORT_MAP){
+        if(ph === pkey || ph.includes(pkey.replace('phòng ','').replace('phòng giao dịch ',''))){
+          phShort = PHONG_SHORT_MAP[pkey]; break;
+        }
+      }
+      if(!phShort) continue;  // Không thuộc KBL
+
+      bl.push({ma:ma, ten:ten, cv:cv, phong:phShort});
+    }
+    logs.push('<span class="ok">✓ File CB: '+cb3.length+' dòng → '+bl.length+' CB bán lẻ (cột A,B,C,D)</span>');
   } else {
     bl=DATA.map(r=>({ma:r.ma,ten:r.ten,cv:r.chucvu,phong:r.phong}));
     logs.push('<span class="warn">⚠ Không có file CB, dùng danh sách hiện tại</span>');
   }
 
   const kvMap={};
-  kv2.forEach(r=>{
-    const ma=gStr(findV(r,'mã cán')||findV(r,'ma can')||findV(r,'ma cb')||'');
-    const kv=parseFloat(findV(r,'sl khoản')||findV(r,'sl khoan')||findV(r,'sl ')||0)||0;
-    if(ma&&ma!=='nan') kvMap[ma]=(kvMap[ma]||0)+kv;
-  });
-  if(kv2.length) logs.push(`<span class="ok">✓ File KV: ${kv2.length} dòng → ${Object.keys(kvMap).length} CB</span>`);
+  // SO LUONG KHOAN VAY - KBL: cot C(idx 2)=Ma CB, cot B(idx 1)=SL Khoan vay
+  var kvStart2=0;
+  if(kv2.length){var kf2=Object.values(kv2[0]);if(kf2[2]&&isNaN(parseFloat(String(kf2[2]).trim()))) kvStart2=1;}
+  for(var ki2=kvStart2;ki2<kv2.length;ki2++){
+    var kr=Object.values(kv2[ki2]);
+    var kvMa=String(kr[2]||'').trim();   // cot C = Ma can bo
+    var kvVal=parseFloat(kr[1])||0;       // cot B = SL khoan vay
+    if(kvMa&&kvMa!=='nan'&&kvMa!=='') kvMap[kvMa]=(kvMap[kvMa]||0)+kvVal;
+  }
+  if(kv2.length) logs.push('<span class="ok">✓ File SO LUONG KHOAN VAY: '+kv2.length+' dòng → '+Object.keys(kvMap).length+' CB (C=Mã, B=SL KV)</span>');
 
   // ── Đọc file QM theo vị trí cột cố định (bỏ qua hàng header) ──
   // Cột B(idx1)=Mã CB, C(2)=DN cuối kỳ, E(4)=HĐV cuối kỳ,
@@ -1001,7 +1121,7 @@ function iBuildPreview() {
       if(!isNaN(nj)&&nj!==0) qmMap[ma].nimt.push(nj);
       if(!isNaN(nk)&&nk!==0) qmMap[ma].nimtt.push(nk);
     });
-    logs.push('<span class="ok">✓ File QM: '+qm1.length+' dòng → '+Object.keys(qmMap).length+' CB (đọc theo cột B,C,E,G,H,I,J,K)</span>');
+    logs.push('<span class="ok">✓ File QM (SO LIEU CAN BO): '+qm1.length+' dòng → '+Object.keys(qmMap).length+' CB (cột B=Mã, C=DN, E=HĐV, G=DV, H=TNT, I=NIM HĐV, J=NIM DN, K=NIM TT)</span>');
   }
 
   const merged=bl.map(cb=>{
@@ -1073,6 +1193,7 @@ function iApply() {
 
   const hasQM=DATA.filter(r=>r.dn!=null).length;
   document.getElementById('imp-done-msg').textContent=`${DATA.length} CB đã được load. ${hasQM} CB có dữ liệu Quy mô & Hiệu quả.`;
+  var bhe=document.getElementById('btn-export-html'); if(bhe) bhe.style.display='inline-flex';
   document.getElementById('imp-done-stats').innerHTML=[
     {v:DATA.length,l:'CB bán lẻ'},{v:DATA.filter(isLD).length,l:'Lãnh đạo'},
     {v:hasQM,l:'Có dữ liệu QM'},{v:sum(DATA,'kv'),l:'Tổng SL KV'}
@@ -1083,6 +1204,7 @@ function iReset() {
   IMP.files={}; IMP.raw={}; IMP.merged=[]; IMP.date='';
   var df=document.getElementById('imp-date'); if(df) df.value='';
   var dp=document.getElementById('imp-date-preview'); if(dp){dp.textContent='';dp.style.display='none';}
+  var bh=document.getElementById('btn-export-html'); if(bh) bh.style.display='none';
   [1,2,3].forEach(i=>{
     const z=document.getElementById('fz'+i);
     z.classList.remove('loaded','drag');
@@ -1126,6 +1248,11 @@ if(initPanel){ initPanel.style.display='block'; }
     <span class="pdf-progress" id="pdf-prog">⏳ Đang xuất...</span>
     <button class="btn-pdf" id="btn-pdf-all" onclick="exportPDF()">⬇ Xuất tất cả tab (PDF)</button>
     <button class="btn-pdf" onclick="exportCurrentTab()" id="btn-pdf-cur">⬇ Xuất tab hiện tại</button>
+    <button class="btn-pdf" id="btn-export-html" onclick="exportUpdatedHTML()"
+      style="background:#1565C0;display:none"
+      title="Xuất file HTML với dữ liệu mới để upload lên GitHub/Netlify">
+      💾 Lưu dữ liệu mới (HTML)
+    </button>
   </div>
 </div>
 
@@ -1330,6 +1457,248 @@ async function exportCurrentTab() {
   btn.disabled = false;
   setTimeout(() => { prog.textContent=''; prog.classList.remove('show'); }, 3000);
 }
+function exportUpdatedHTML() {
+  var btn = document.getElementById('btn-export-html');
+  var prog = document.getElementById('pdf-prog');
+  if(btn) btn.disabled = true;
+  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Đang tạo file HTML...'; }
+  try {
+    var fullHTML = document.documentElement.outerHTML;
+    var newSeedJSON = JSON.stringify(DATA);
+    fullHTML = fullHTML.replace(/const SEED = \[[\s\S]*?\];/, 'const SEED = ' + newSeedJSON + ';');
+    if(IMP.date) {
+      fullHTML = fullHTML.replace(/id="src-badge">[^<]*/, 'id="src-badge">\uD83D\uDCC5 D\u1EEF li\u1EC7u: ' + IMP.date);
+      fullHTML = fullHTML.replace(/id="period-badge">[^<]*/, 'id="period-badge">' + DATA.length + ' C\u00E1n b\u1ED9');
+    }
+    var blob = new Blob([fullHTML], {type:'text/html;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    var today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    var ds = IMP.date ? IMP.date.replace(/\//g,'') : today;
+    a.download = 'BIDV_TrangTien_Dashboard_' + ds + '.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    if(prog) prog.textContent = '\u2705 \u0110\u00E3 t\u1EA3i xong! \u0110\u1ED5i t\u00EAn th\u00E0nh index.html r\u1ED3i upload l\u00EAn GitHub.';
+  } catch(e) {
+    if(prog) prog.textContent = '\u274C L\u1ED7i: ' + e.message;
+  }
+  if(btn) btn.disabled = false;
+  setTimeout(function(){ if(prog){prog.textContent='';prog.classList.remove('show');} }, 6000);
+}
+
+// ── GOOGLE SHEET INTEGRATION ─────────────────────────────────
+
+function extractSheetId(url) {
+  var m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+function extractGid(url) {
+  var m = url.match(/[#&?]gid=(\d+)/);
+  return m ? m[1] : '0';
+}
+
+function buildCSVUrl(url) {
+  var id = extractSheetId(url);
+  if (!id) return null;
+  var gid = extractGid(url);
+  return 'https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid;
+}
+
+function validateGSUrl(inputId, statusId) {
+  var val = document.getElementById(inputId).value.trim();
+  var st = document.getElementById(statusId);
+  if (!val) { st.textContent = ''; return; }
+  var id = extractSheetId(val);
+  st.textContent = id ? '✅ OK' : '❌ Sai';
+  st.style.color = id ? 'var(--green)' : 'var(--red)';
+}
+
+function toggleGSSection() {
+  var body = document.getElementById('gs-body');
+  var btn = document.getElementById('gs-toggle-btn');
+  if (body.style.display === 'none') {
+    body.style.display = 'block'; btn.textContent = 'Ẩn';
+  } else {
+    body.style.display = 'none'; btn.textContent = 'Mở';
+  }
+}
+
+function saveGSUrls() {
+  var urls = {
+    gs1: document.getElementById('gs-url-1').value.trim(),
+    gs2: document.getElementById('gs-url-2').value.trim(),
+    gs3: document.getElementById('gs-url-3').value.trim()
+  };
+  try { localStorage.setItem('bidv_gs_urls', JSON.stringify(urls)); } catch(e) {}
+  document.getElementById('gs-sync-status').textContent = '✅ Đã lưu URL vào trình duyệt';
+  setTimeout(function(){ document.getElementById('gs-sync-status').textContent=''; }, 3000);
+}
+
+function clearGSUrls() {
+  ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  ['gs-status-1','gs-status-2','gs-status-3'].forEach(function(id){
+    document.getElementById(id).textContent = '';
+  });
+  try { localStorage.removeItem('bidv_gs_urls'); } catch(e) {}
+}
+
+function loadSavedGSUrls() {
+  try {
+    var saved = localStorage.getItem('bidv_gs_urls');
+    if (!saved) return;
+    var urls = JSON.parse(saved);
+    if (urls.gs1) { document.getElementById('gs-url-1').value = urls.gs1; validateGSUrl('gs-url-1','gs-status-1'); }
+    if (urls.gs2) { document.getElementById('gs-url-2').value = urls.gs2; validateGSUrl('gs-url-2','gs-status-2'); }
+    if (urls.gs3) { document.getElementById('gs-url-3').value = urls.gs3; validateGSUrl('gs-url-3','gs-status-3'); }
+  } catch(e) {}
+}
+
+function parseCSVToObjects(csvText) {
+  var lines = csvText.trim().split('\n');
+  if (lines.length < 2) return [];
+  // Parse header
+  var headers = parseCSVLine(lines[0]);
+  var result = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = parseCSVLine(lines[i]);
+    if (!vals.length || vals.every(function(v){ return !v.trim(); })) continue;
+    var obj = {};
+    headers.forEach(function(h, idx) { obj[h] = vals[idx] !== undefined ? vals[idx] : null; });
+    result.push(obj);
+  }
+  return result;
+}
+
+function parseCSVLine(line) {
+  var result = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (c === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      result.push(cur.trim()); cur = '';
+    } else cur += c;
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function setProgress(pct, text) {
+  document.getElementById('gs-prog-bar').style.width = pct + '%';
+  document.getElementById('gs-prog-text').textContent = text;
+}
+
+async function fetchCSV(url) {
+  // Use CORS proxy for Google Sheets CSV
+  var csvUrl = buildCSVUrl(url);
+  if (!csvUrl) throw new Error('URL không hợp lệ');
+  // Try direct first (works if dashboard hosted on same origin or CORS allowed)
+  try {
+    var resp = await fetch(csvUrl, { redirect: 'follow' });
+    if (resp.ok) {
+      var text = await resp.text();
+      if (text.trim().length > 0) return text;
+    }
+  } catch(e) {}
+  // Fallback: use allorigins proxy
+  var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl);
+  var resp2 = await fetch(proxyUrl);
+  if (!resp2.ok) throw new Error('Không tải được dữ liệu. Kiểm tra Sheet đã chia sẻ công khai chưa.');
+  var data = await resp2.json();
+  if (!data.contents) throw new Error('Dữ liệu trống. Sheet có thể chưa được chia sẻ công khai.');
+  return data.contents;
+}
+
+async function syncGoogleSheets() {
+  var btn = document.getElementById('gs-sync-btn');
+  var status = document.getElementById('gs-sync-status');
+  var prog = document.getElementById('gs-progress');
+  btn.disabled = true;
+  prog.style.display = 'block';
+  status.textContent = '';
+
+  var url1 = document.getElementById('gs-url-1').value.trim();
+  var url2 = document.getElementById('gs-url-2').value.trim();
+  var url3 = document.getElementById('gs-url-3').value.trim();
+
+  if (!url1 && !url2 && !url3) {
+    status.textContent = '⚠️ Chưa nhập URL nào';
+    status.style.color = 'var(--orange)';
+    btn.disabled = false; prog.style.display = 'none';
+    return;
+  }
+
+  try {
+    setProgress(5, 'Đang kết nối...');
+    var logs = [];
+
+    // Load file 1: QM
+    if (url1) {
+      setProgress(15, 'Đang tải file Quy mô & Hiệu quả...');
+      var csv1 = await fetchCSV(url1);
+      IMP.raw[1] = parseCSVToObjects(csv1);
+      logs.push('✅ File QM: ' + IMP.raw[1].length + ' dòng');
+      setProgress(40, logs[logs.length-1]);
+    }
+
+    // Load file 2: SL KV
+    if (url2) {
+      setProgress(50, 'Đang tải file Khoản vay...');
+      var csv2 = await fetchCSV(url2);
+      IMP.raw[2] = parseCSVToObjects(csv2);
+      logs.push('✅ File KV: ' + IMP.raw[2].length + ' dòng');
+      setProgress(70, logs[logs.length-1]);
+    }
+
+    // Load file 3: CB
+    if (url3) {
+      setProgress(80, 'Đang tải danh sách Cán bộ...');
+      var csv3 = await fetchCSV(url3);
+      IMP.raw[3] = parseCSVToObjects(csv3);
+      logs.push('✅ File CB: ' + IMP.raw[3].length + ' dòng');
+      setProgress(90, logs[logs.length-1]);
+    }
+
+    setProgress(100, 'Hoàn tất! Chuyển sang Bước 2...');
+    // Update file zone indicators
+    [1,2,3].forEach(function(i) {
+      if (IMP.raw[i]) {
+        var z = document.getElementById('fz'+i);
+        if (z) { z.classList.add('loaded'); z.querySelector('.fzone-icon').textContent='✅'; }
+        document.getElementById('imp-next1').disabled = false;
+      }
+    });
+
+    status.textContent = '✅ Đã tải ' + Object.keys(IMP.raw).length + '/3 file';
+    status.style.color = 'var(--green)';
+
+    // Auto-advance to step 2 after 800ms
+    setTimeout(function(){ iStep(2); }, 800);
+
+  } catch(e) {
+    setProgress(0, '');
+    prog.style.display = 'none';
+    status.textContent = '❌ Lỗi: ' + e.message;
+    status.style.color = 'var(--red)';
+  }
+
+  btn.disabled = false;
+}
+
+// Load saved URLs when page loads
+window.addEventListener('load', function(){
+  loadSavedGSUrls();
+  // Pre-validate default URLs
+  ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id,i){
+    validateGSUrl(id,'gs-status-'+(i+1));
+  });
+});
+
 </script>
 
 </body>
