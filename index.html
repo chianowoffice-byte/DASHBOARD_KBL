@@ -402,7 +402,7 @@ canvas{max-height:260px}
             <div style="display:flex;gap:7px;align-items:center">
               <input id="gs-gas-url" type="text"
                 placeholder="https://script.google.com/macros/s/.../exec"
-                value="https://script.google.com/macros/s/AKfycbzrBnqWBja8cg5ypru02AqM4Hb5SSMB3w7r9DBjXKBTyK9Rv5C3EKST2z43Ve1z5j5mMA/exec"
+                value="https://script.google.com/macros/s/AKfycbylqkggFEr2gdeFpcJVAki0nmYhsgK1RvpIj_4E5CAyHDRnebACNZZl88fZNCkrhILzxA/exec"
                 style="flex:1;font-size:11px;padding:5px 9px;border:1px solid #A5D6A7;border-radius:5px">
               <button onclick="showGASGuide()"
                 style="white-space:nowrap;font-size:11px;padding:5px 10px;border:1px solid #2E7D32;border-radius:5px;background:#fff;color:#2E7D32;cursor:pointer">
@@ -1117,10 +1117,19 @@ function iBuildPreview() {
 
   const kvMap={};
   // SO LUONG KHOAN VAY - KBL: C(idx2)=Ma CB, B(idx1)=SL KV, D2=Ngay so lieu
-  // Doc ngay so lieu tu o D2 (row index 1, col index 3)
-  if(kv2.length >= 2){
-    var d2row = Object.values(kv2[1]);
-    var d2val = String(d2row[3]||'').trim();
+  // Doc ngay so lieu tu o D2: row 2 cot D trong raw CSV
+  // Trong raw CSV: lines[0]=header, lines[1]=row2, col D=index 3
+  var _rawCSV2 = IMP.rawCSV2 || '';
+  var _csvLines = _rawCSV2.trim().split('\n');
+  var d2val = '';
+  if(_csvLines.length >= 2){
+    var _row2cols = parseCSVLine(_csvLines[1]); // lines[1] = Sheet row 2
+    d2val = String(_row2cols[3]||'').trim(); // col D = index 3
+  }
+  if(!d2val && kv2.length >= 1){
+    var d2row = Object.values(kv2[0]); // fallback: kv2[0] = row2 after header skip
+    d2val = String(d2row[3]||'').trim();
+  }
     if(d2val && d2val !== '' && d2val !== 'null'){
       // Neu chua co ngay nhap tay thi dung D2
       if(!IMP.date){
@@ -1296,7 +1305,7 @@ function getGASUrl(){
   var el=document.getElementById('gs-gas-url');
   var v=el ? el.value.trim() : '';
   // Fallback hardcoded GAS URL
-  if(!v) v='https://script.google.com/macros/s/AKfycbzrBnqWBja8cg5ypru02AqM4Hb5SSMB3w7r9DBjXKBTyK9Rv5C3EKST2z43Ve1z5j5mMA/exec';
+  if(!v) v='https://script.google.com/macros/s/AKfycbylqkggFEr2gdeFpcJVAki0nmYhsgK1RvpIj_4E5CAyHDRnebACNZZl88fZNCkrhILzxA/exec';
   return v;
 }
 
@@ -1310,15 +1319,29 @@ async function saveDataToGAS(){
   var url=getGASUrl(); if(!url) return;
   setSaveStatus('⏳ Đang lưu...','var(--teal)');
   try {
-    var body=JSON.stringify({
-      action:'save', key:GAS_DATA_KEY,
-      data:DATA, date:IMP.date||'',
-      savedAt:new Date().toISOString()
-    });
-    await fetch(url,{method:'POST',mode:'no-cors',
-      headers:{'Content-Type':'application/json'},body:body});
-    // no-cors = opaque, verify bang GET sau 2s
-    setTimeout(function(){ verifyAfterSave(url); }, 2000);
+    // Dung form-urlencoded POST: no-cors hop le, GAS nhan duoc qua e.parameter
+    var jsonStr = JSON.stringify(DATA);
+    // Chia nho neu data lon (GAS gioi han ~50KB/parameter)
+    var chunkSize = 40000;
+    var chunks = [];
+    for(var i=0;i<jsonStr.length;i+=chunkSize) chunks.push(jsonStr.slice(i,i+chunkSize));
+
+    for(var c=0;c<chunks.length;c++){
+      var params = new URLSearchParams();
+      params.append('action','save');
+      params.append('key', GAS_DATA_KEY);
+      params.append('chunk', String(c));
+      params.append('total', String(chunks.length));
+      params.append('data',  chunks[c]);
+      if(c===0){
+        params.append('date',    IMP.date||'');
+        params.append('savedAt', new Date().toISOString());
+        params.append('rows',    String(DATA.length));
+      }
+      await fetch(url, {method:'POST', mode:'no-cors', body:params});
+      await new Promise(function(r){setTimeout(r,300);}); // gap 300ms giua chunks
+    }
+    setTimeout(function(){ verifyAfterSave(url); }, 1500);
   } catch(e){
     setSaveStatus('⚠️ Lưu thất bại: '+e.message,'#E65100');
   }
@@ -1813,6 +1836,7 @@ async function syncGoogleSheets() {
       setProgress(50, 'Đang tải file Khoản vay...');
       var csv2 = await fetchCSV(url2);
       IMP.raw[2] = parseCSVToObjects(csv2);
+      IMP.rawCSV2 = csv2; // Luu raw CSV de doc D2
       logs.push('✅ File KV: ' + IMP.raw[2].length + ' dòng');
       setProgress(70, logs[logs.length-1]);
     }
