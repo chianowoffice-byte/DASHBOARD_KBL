@@ -397,6 +397,18 @@ canvas{max-height:260px}
               <span id="gs-status-3" style="font-size:11px;width:60px;text-align:center"></span>
             </div>
           </div>
+          <div style="background:#E8F5E9;border-radius:7px;padding:9px 12px;margin-bottom:10px;border-left:3px solid #2E7D32">
+            <div style="font-size:11px;font-weight:700;color:#1B5E20;margin-bottom:5px">&#9889; Google Apps Script Web App URL (khuy��n dùng — không bị lỗi CORS):</div>
+            <div style="display:flex;gap:7px;align-items:center">
+              <input id="gs-gas-url" type="text"
+                placeholder="https://script.google.com/macros/s/.../exec"
+                style="flex:1;font-size:11px;padding:5px 9px;border:1px solid #A5D6A7;border-radius:5px">
+              <button onclick="showGASGuide()"
+                style="white-space:nowrap;font-size:11px;padding:5px 10px;border:1px solid #2E7D32;border-radius:5px;background:#fff;color:#2E7D32;cursor:pointer">
+                &#10067; Hướng dẫn cài GAS
+              </button>
+            </div>
+          </div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <button onclick="syncGoogleSheets()" id="gs-sync-btn"
               style="background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer">
@@ -1641,26 +1653,44 @@ function setProgress(pct, text) {
 }
 
 async function fetchCSV(url) {
-  // Use CORS proxy for Google Sheets CSV
   var csvUrl = buildCSVUrl(url);
-  if (!csvUrl) throw new Error('URL không hợp lệ');
-  // Try direct first (works if dashboard hosted on same origin or CORS allowed)
-  try {
-    var resp = await fetch(csvUrl, { redirect: 'follow' });
-    if (resp.ok) {
-      var text = await resp.text();
-      if (text.trim().length > 0) return text;
-    }
-  } catch(e) {}
-  // Fallback: use allorigins proxy
-  var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl);
-  var resp2 = await fetch(proxyUrl);
-  if (!resp2.ok) throw new Error('Không tải được dữ liệu. Kiểm tra Sheet đã chia sẻ công khai chưa.');
-  var data = await resp2.json();
-  if (!data.contents) throw new Error('Dữ liệu trống. Sheet có thể chưa được chia sẻ công khai.');
-  return data.contents;
-}
+  if (!csvUrl) throw new Error('URL khong hop le');
+  var gasEl = document.getElementById('gs-gas-url');
+  var GAS_URL = gasEl ? gasEl.value.trim() : '';
 
+  // Strategy 1: Google Apps Script (no CORS, recommended)
+  if (GAS_URL) {
+    try {
+      var gr = await fetch(GAS_URL + '?sheetId=' + extractSheetId(url));
+      if (gr.ok) {
+        var gd = await gr.json();
+        if (gd.csv && gd.csv.trim()) return gd.csv;
+      }
+    } catch(e) { console.warn('GAS failed:', e); }
+  }
+
+  // Strategy 2: Direct fetch (public sheets)
+  try {
+    var r2 = await fetch(csvUrl, {redirect:'follow'});
+    if (r2.ok) { var t2 = await r2.text(); if (t2.trim()) return t2; }
+  } catch(e) {}
+
+  // Strategy 3: allorigins.win
+  try {
+    var r3 = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(csvUrl));
+    if (r3.ok) { var d3=await r3.json(); if(d3.contents&&d3.contents.trim()) return d3.contents; }
+  } catch(e) {}
+
+  // Strategy 4: corsproxy.io
+  try {
+    var r4 = await fetch('https://corsproxy.io/?'+encodeURIComponent(csvUrl));
+    if (r4.ok) { var t4=await r4.text(); if(t4.trim()) return t4; }
+  } catch(e) {}
+
+  throw new Error(
+    'Khong ket noi duoc. Hay cai dat Google Apps Script: nhan nut [? Huong dan cai GAS] de biet cach.'
+  );
+}
 async function syncGoogleSheets() {
   var btn = document.getElementById('gs-sync-btn');
   var status = document.getElementById('gs-sync-status');
@@ -1746,6 +1776,72 @@ window.addEventListener('load', function(){
   });
 });
 
+</script>
+
+
+<div id="gas-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);z-index:9999;overflow-y:auto;padding:20px">
+  <div style="background:#fff;max-width:640px;margin:0 auto;border-radius:12px;overflow:hidden">
+    <div style="background:#1B5E54;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:14px;font-weight:700">&#9889; Cài Google Apps Script — Hết lỗi CORS</span>
+      <button onclick="document.getElementById('gas-modal').style.display='none'" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1">&#x2715;</button>
+    </div>
+    <div style="padding:18px;font-size:12px;line-height:1.8;color:#1A2B2A">
+      <div style="background:#E8F5E9;border-radius:7px;padding:10px 13px;margin-bottom:14px;font-size:11px">
+        <b style="color:#1B5E20">Tại sao cần GAS?</b> Trình duyệt chặn request từ GitHub Pages đến Google Sheets (CORS).
+        GAS chạy trên máy chầ Google nên không bị chặn. Cài 1 lần, dùng mãi, miễn phí.
+      </div>
+      <div style="display:grid;gap:12px">
+        <div>
+          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 1 — Mở Google Apps Script</div>
+          Vào <b>script.google.com</b> → Đ\u0103ng nhập bằng tài khoản Google có quyền đọc 3 Sheet
+          → Nhấn <b>"Dự án mới"</b>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 2 — Dán code sau vào ô Code.gs</div>
+          <div style="background:#1A2B2A;color:#A8D8B0;border-radius:7px;padding:12px;font-family:monospace;font-size:10px;white-space:pre-wrap;overflow-x:auto">const SHEETS = {\n  qm: '1CQJ45zrm3HUH-rkR6RRQwO7WPZk2IphD8-3_-T4_-Jw',\n  kv: '1n1VGlO5626-sF4ziV7NIGGch6FvaQEfipT5JTosrueM',\n  cb: '1lJnc2fYyhXq9GLKsU5mF1HkAqoAgustLduYditJ1AmQ'\n};\n\nfunction doGet(e) {\n  var id = e.parameter.sheetId || '';\n  var valid = Object.values(SHEETS).indexOf(id) > -1;\n  if (!valid) return resp({error:'Sheet ID khong hop le'});\n  var data = SpreadsheetApp.openById(id).getSheets()[0].getDataRange().getValues();\n  var csv = data.map(function(row){\n    return row.map(function(c){\n      var s=String(c===null||c===undefined?'':c);\n      return /[,\"\n]/.test(s)?'\"'+s.replace(/\"/g,'\"\"')+'\"':s;\n    }).join(',');\n  }).join('\\n');\n  return resp({csv:csv, rows:data.length});\n}\n\nfunction resp(obj){\n  return ContentService\n    .createTextOutput(JSON.stringify(obj))\n    .setMimeType(ContentService.MimeType.JSON);\n}</div>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 3 — Triển khai</div>
+          Nhấn <b>Triển khai</b> → <b>Triển khai mới</b> → Loại: <b>Ứng dụng web</b><br>
+          Người truy cập: <b>Bất kỳ ai</b> → <b>Triển khai</b> → Cấp quyền → Copy URL
+        </div>
+        <div>
+          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 4 — Dán URL vào ô GAS trong Dashboard</div>
+          Dán URL dạng <code style="background:#F5F5F5;padding:2px 6px;border-radius:4px">https://script.google.com/macros/s/.../exec</code><br>
+          vào ô ⚙ <b>Google Apps Script Web App URL</b> → Nhấn <b>🔄 \u0110ồng bộ</b>
+        </div>
+        <div style="background:#FFF8E1;border-radius:7px;padding:10px 13px;border-left:3px solid #F9A825;font-size:11px">
+          ⚠️ Khi deploy lần đầu Google yêu cầu cấp quyền — chọn <b>"Tiếp tục"</b> → <b>"Cho phập"</b>.
+          Sau khi sửa code, nhấn <b>Triển khai mới</b> (không dùng "Quản lý triển khai").
+          Nhấn <b>💾 Lưu URL</b> sau khi nhập GAS URL để không phải nhập lại.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
+// Close modal on backdrop click
+document.getElementById('gas-modal').addEventListener('click', function(e){
+  if(e.target===this) this.style.display='none';
+});
+// Save/load GAS URL with other URLs
+var _ogSave = saveGSUrls;
+saveGSUrls = function(){
+  _ogSave();
+  var el=document.getElementById('gs-gas-url');
+  if(el&&el.value.trim()){ try{localStorage.setItem('bidv_gas_url',el.value.trim());}catch(e){} }
+};
+var _ogLoad = loadSavedGSUrls;
+loadSavedGSUrls = function(){
+  _ogLoad();
+  try{
+    var v=localStorage.getItem('bidv_gas_url');
+    var el=document.getElementById('gs-gas-url');
+    if(v&&el) el.value=v;
+  }catch(e){}
+};
 </script>
 
 </body>
