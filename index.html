@@ -1285,12 +1285,90 @@ PHONGS.forEach(p=>{
     document.getElementById(id).appendChild(o);
   });
 });
-loadDataFromGAS();
-renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
-document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
-document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
-document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
-document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
+
+// ============================================================
+// GAS DATA STORAGE
+// ============================================================
+var GAS_DATA_KEY = 'BIDV_DASHBOARD_DATA';
+
+function getGASUrl(){
+  var el=document.getElementById('gs-gas-url');
+  return el ? el.value.trim() : '';
+}
+
+function setSaveStatus(msg, color){
+  var el=document.getElementById('gs-save-status');
+  if(el){ el.textContent=msg; el.style.color=color||'var(--gray)'; }
+}
+
+// Luu DATA len GAS qua POST
+async function saveDataToGAS(){
+  var url=getGASUrl(); if(!url) return;
+  setSaveStatus('⏳ Đang lưu...','var(--teal)');
+  try {
+    var body=JSON.stringify({
+      action:'save', key:GAS_DATA_KEY,
+      data:DATA, date:IMP.date||'',
+      savedAt:new Date().toISOString()
+    });
+    await fetch(url,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'application/json'},body:body});
+    // no-cors = opaque, verify bang GET sau 2s
+    setTimeout(function(){ verifyAfterSave(url); }, 2000);
+  } catch(e){
+    setSaveStatus('⚠️ Lưu thất bại: '+e.message,'#E65100');
+  }
+}
+
+async function verifyAfterSave(url){
+  try {
+    var r=await fetch(url+'?action=ping&key='+GAS_DATA_KEY);
+    if(r.ok){
+      var d=await r.json();
+      if(d.savedAt){
+        var t=new Date(d.savedAt).toLocaleTimeString('vi-VN');
+        setSaveStatus('✅ Đã lưu lên GAS lúc '+t,'var(--green)');
+      }
+    }
+  } catch(e){}
+}
+
+// Doc DATA tu GAS khi trang load
+async function loadDataFromGAS(){
+  var url=getGASUrl(); if(!url) return;
+  var badge=document.getElementById('src-badge');
+  if(badge) badge.textContent='⏳ Đang tải...';
+  try {
+    var r=await fetch(url+'?action=load&key='+GAS_DATA_KEY);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    if(!d.data||!d.data.length) throw new Error('empty');
+
+    DATA=filterExclude(d.data);
+    if(d.date) IMP.date=d.date;
+
+    var label=d.date?' – Kỳ '+d.date:'';
+    if(badge){badge.textContent='☁️ Dữ liệu từ GAS'+label;
+      badge.className='data-badge badge-import';}
+    var pb=document.getElementById('period-badge');
+    if(pb) pb.textContent=DATA.length+' Cán bộ';
+
+    bieuRendered=false;
+    ['f-phong-cb','f-phong-ss'].forEach(function(id){
+      var el=document.getElementById(id); if(!el) return;
+      el.innerHTML='<option value="">Tất cả</option>';
+      PHONGS.filter(function(p){return DATA.some(function(r){return r.phong===p;});})
+        .forEach(function(p){var o=document.createElement('option');o.value=p;o.text=p;el.appendChild(o);});
+    });
+
+    var ts=d.savedAt?new Date(d.savedAt).toLocaleDateString('vi-VN'):'';
+    setSaveStatus('✅ Tải từ GAS thành công'+(ts?' ('+ts+')':''),'var(--green)');
+  } catch(e){
+    if(badge) badge.textContent='📅 Dữ liệu gốc 15/05/2026';
+    if(e.message!=='empty') console.warn('loadDataFromGAS:',e.message);
+  }
+}
+
 // Force-init display state via style (immune to CSS bleed from @media print)
 document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
 var initPanel = document.getElementById('tab-tq');
@@ -1824,88 +1902,15 @@ window.addEventListener('load', function(){
 </div>
 
 <script>
-// ============================================================
-// GAS DATA STORAGE
-// ============================================================
-var GAS_DATA_KEY = 'BIDV_DASHBOARD_DATA';
-
-function getGASUrl(){
-  var el=document.getElementById('gs-gas-url');
-  return el ? el.value.trim() : '';
-}
-
-function setSaveStatus(msg, color){
-  var el=document.getElementById('gs-save-status');
-  if(el){ el.textContent=msg; el.style.color=color||'var(--gray)'; }
-}
-
-// Luu DATA len GAS qua POST
-async function saveDataToGAS(){
-  var url=getGASUrl(); if(!url) return;
-  setSaveStatus('⏳ Đang lưu...','var(--teal)');
-  try {
-    var body=JSON.stringify({
-      action:'save', key:GAS_DATA_KEY,
-      data:DATA, date:IMP.date||'',
-      savedAt:new Date().toISOString()
-    });
-    await fetch(url,{method:'POST',mode:'no-cors',
-      headers:{'Content-Type':'application/json'},body:body});
-    // no-cors = opaque, verify bang GET sau 2s
-    setTimeout(function(){ verifyAfterSave(url); }, 2000);
-  } catch(e){
-    setSaveStatus('⚠️ Lưu thất bại: '+e.message,'#E65100');
-  }
-}
-
-async function verifyAfterSave(url){
-  try {
-    var r=await fetch(url+'?action=ping&key='+GAS_DATA_KEY);
-    if(r.ok){
-      var d=await r.json();
-      if(d.savedAt){
-        var t=new Date(d.savedAt).toLocaleTimeString('vi-VN');
-        setSaveStatus('✅ Đã lưu lên GAS lúc '+t,'var(--green)');
-      }
-    }
-  } catch(e){}
-}
-
-// Doc DATA tu GAS khi trang load
-async function loadDataFromGAS(){
-  var url=getGASUrl(); if(!url) return;
-  var badge=document.getElementById('src-badge');
-  if(badge) badge.textContent='⏳ Đang tải...';
-  try {
-    var r=await fetch(url+'?action=load&key='+GAS_DATA_KEY);
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    var d=await r.json();
-    if(!d.data||!d.data.length) throw new Error('empty');
-
-    DATA=filterExclude(d.data);
-    if(d.date) IMP.date=d.date;
-
-    var label=d.date?' – Kỳ '+d.date:'';
-    if(badge){badge.textContent='☁️ Dữ liệu từ GAS'+label;
-      badge.className='data-badge badge-import';}
-    var pb=document.getElementById('period-badge');
-    if(pb) pb.textContent=DATA.length+' Cán bộ';
-
-    bieuRendered=false;
-    ['f-phong-cb','f-phong-ss'].forEach(function(id){
-      var el=document.getElementById(id); if(!el) return;
-      el.innerHTML='<option value="">Tất cả</option>';
-      PHONGS.filter(function(p){return DATA.some(function(r){return r.phong===p;});})
-        .forEach(function(p){var o=document.createElement('option');o.value=p;o.text=p;el.appendChild(o);});
-    });
-
-    var ts=d.savedAt?new Date(d.savedAt).toLocaleDateString('vi-VN'):'';
-    setSaveStatus('✅ Tải từ GAS thành công'+(ts?' ('+ts+')':''),'var(--green)');
-  } catch(e){
-    if(badge) badge.textContent='📅 Dữ liệu gốc 15/05/2026';
-    if(e.message!=='empty') console.warn('loadDataFromGAS:',e.message);
-  }
-}
+// Wrap init in window.onload so all script blocks are parsed first
+window.addEventListener('load', function() {
+  loadDataFromGAS();
+});
+renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
+document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
+document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
+document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
 
 function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
 // Close modal on backdrop click
