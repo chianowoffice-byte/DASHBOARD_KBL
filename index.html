@@ -941,6 +941,28 @@ function mkChart(id, type, data, opts) {
 // ── IMPORT ───────────────────────────────────────────────────
 const IMP = {files:{}, raw:{}, merged:[], date:''};
 
+function parseDataDate(val){
+  if(!val) return null;
+  val = String(val).trim();
+  var m1 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m1){
+    var d=m1[1].padStart(2,'0'), mo=m1[2].padStart(2,'0'), y=m1[3];
+    if(y.length===2) y='20'+y;
+    return d+'/'+mo+'/'+y;
+  }
+  var m2 = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m2) return m2[3]+'/'+m2[2]+'/'+m2[1];
+  var n = parseFloat(val);
+  if(!isNaN(n) && n > 40000 && n < 60000){
+    var epoch = new Date((n - 25569)*86400000);
+    var dd=String(epoch.getUTCDate()).padStart(2,'0');
+    var mm=String(epoch.getUTCMonth()+1).padStart(2,'0');
+    return dd+'/'+mm+'/'+epoch.getUTCFullYear();
+  }
+  if(/\d{2}/.test(val) && /\d{4}/.test(val)) return val;
+  return null;
+}
+
 function updateDateBadge(){
   var d = document.getElementById('imp-date').value;
   if(!d){ IMP.date=''; document.getElementById('imp-date-preview').style.display='none'; return; }
@@ -1081,7 +1103,32 @@ function iBuildPreview() {
   }
 
   const kvMap={};
-  // SO LUONG KHOAN VAY - KBL: cot C(idx 2)=Ma CB, cot B(idx 1)=SL Khoan vay
+  // SO LUONG KHOAN VAY - KBL: C(idx2)=Ma CB, B(idx1)=SL KV, D2=Ngay so lieu
+  // Doc ngay so lieu tu o D2 (row index 1, col index 3)
+  if(kv2.length >= 2){
+    var d2row = Object.values(kv2[1]);
+    var d2val = String(d2row[3]||'').trim();
+    if(d2val && d2val !== '' && d2val !== 'null'){
+      // Neu chua co ngay nhap tay thi dung D2
+      if(!IMP.date){
+        // Convert excel date serial or string to DD/MM/YYYY
+        var d2parsed = parseDataDate(d2val);
+        if(d2parsed){
+          IMP.date = d2parsed;
+          var di = document.getElementById('imp-date');
+          if(di){
+            // Convert DD/MM/YYYY -> YYYY-MM-DD for date input
+            var dp = d2parsed.split('/');
+            if(dp.length===3) di.value = dp[2]+'-'+dp[1]+'-'+dp[0];
+          }
+          updateDateBadge();
+          logs.push('<span class="ok">\u2713 Ng�y s\u1ed1 li��u từ � D2: '+d2parsed+'</span>');
+        }
+      } else {
+        logs.push('<span class="ok">\u2139 � D2 c� ng�y: '+d2val+' (gi\u1eef ng�y \u0111� nh\u1eadp tay)</span>');
+      }
+    }
+  }
   var kvStart2=0;
   if(kv2.length){var kf2=Object.values(kv2[0]);if(kf2[2]&&isNaN(parseFloat(String(kf2[2]).trim()))) kvStart2=1;}
   for(var ki2=kvStart2;ki2<kv2.length;ki2++){
