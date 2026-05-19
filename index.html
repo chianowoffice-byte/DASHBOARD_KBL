@@ -218,7 +218,7 @@ canvas{max-height:260px}
 <div id="tab-tq" class="tab-panel active">
   <div class="kpi-grid" id="kpi-tq"></div>
   <div class="bench-strip">
-    <span class="bench-label">So sánh vs:</span>
+    <span class="bench-label">So sánh với:</span>
     <div class="bench-toggle">
       <button class="bench-btn active" onclick="setBench('phong',this)">TB Phòng</button>
       <button class="bench-btn" onclick="setBench('kbl',this)">TB Toàn Khối BL</button>
@@ -239,7 +239,7 @@ canvas{max-height:260px}
 <div id="tab-ld" class="tab-panel">
   <div class="kpi-grid" id="kpi-ld"></div>
   <div class="bench-strip">
-    <span class="bench-label">So sánh vs:</span>
+    <span class="bench-label">So sánh với:</span>
     <div class="bench-toggle">
       <button class="bench-btn active" onclick="setBenchLD('phong',this)">TB Phòng</button>
       <button class="bench-btn" onclick="setBenchLD('kbl',this)">TB Toàn KBL</button>
@@ -255,7 +255,7 @@ canvas{max-height:260px}
 <div id="tab-cb" class="tab-panel">
   <div class="kpi-grid" id="kpi-cb"></div>
   <div class="bench-strip">
-    <span class="bench-label">So sánh vs:</span>
+    <span class="bench-label">So sánh với:</span>
     <div class="bench-toggle">
       <button class="bench-btn active" onclick="setBenchCB('phong',this)">TB Phòng</button>
       <button class="bench-btn" onclick="setBenchCB('kbl',this)">TB Toàn KBL</button>
@@ -345,6 +345,13 @@ canvas{max-height:260px}
     <div class="chart-card" style="margin-bottom:14px">
       <p style="font-size:13px;font-weight:700;color:var(--teal-d);margin-bottom:4px">📂 Chọn file dữ liệu (.xlsx hoặc .csv)</p>
       <p style="font-size:11px;color:var(--gray);margin-bottom:12px">Upload 1, 2 hoặc cả 3 file. Dashboard sẽ tự merge và cập nhật tất cả biểu đồ.</p>
+      <div style="background:var(--teal-l);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:var(--teal-d);white-space:nowrap">📅 Kỳ dữ liệu:</span>
+        <input type="date" id="imp-date" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text);background:#fff;font-weight:600"
+          onchange="updateDateBadge()">
+        <span style="font-size:11px;color:var(--gray)">Ngày này sẽ hiển thị trên header Dashboard sau khi import</span>
+        <span id="imp-date-preview" style="font-size:11px;font-weight:700;color:var(--teal);display:none"></span>
+      </div>
       <div class="file-grid">
         <div>
           <p style="font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600">1 · Quy mô &amp; Hiệu quả</p>
@@ -490,7 +497,7 @@ function benchInfoHTML(mode) {
   const allLD=DATA.filter(isLD), allCB=DATA.filter(r=>!isLD(r)), all=DATA;
   const src = mode==='kbl'?all : mode==='ld_kbl'?allLD : mode==='cb_kbl'?allCB : null;
   if (!src) return 'Tính riêng theo từng phòng';
-  return `n=${src.length} CB &nbsp;|&nbsp; TB DN: <span>${avg(src,'dn').toFixed(0)} tỷ</span> &nbsp;|&nbsp; TB HĐV: <span>${avg(src,'hdv').toFixed(0)} tỷ</span> &nbsp;|&nbsp; TB KV: <span>${(sum(src,'kv')/src.length).toFixed(0)}</span>`;
+  return `n=${src.length} CB &nbsp;|&nbsp; TB Dư nợ: <span>${avg(src,'dn').toFixed(0)} tỷ</span> &nbsp;|&nbsp; TB HĐV: <span>${avg(src,'hdv').toFixed(0)} tỷ</span> &nbsp;|&nbsp; TB SL KV: <span>${(sum(src,'kv')/src.length).toFixed(0)}</span>`;
 }
 
 // ── SET BENCH ─────────────────────────────────────────────────
@@ -557,8 +564,8 @@ function renderTQ() {
   let h=`<thead><tr><th>Phòng</th><th>CB</th><th>LD</th><th>CB CM</th>
     <th>DN (tỷ)</th><th>HĐV (tỷ)</th><th>TNT (tỷ)</th><th>DV (tr)</th>
     <th>SL KV</th><th>TB NIM HĐV</th>
-    <th class="ttip" data-tip="vs Benchmark được chọn">vs BM – DN</th>
-    <th class="ttip" data-tip="vs Benchmark được chọn">vs BM – KV</th>
+    <th class="ttip" data-tip="vs Benchmark được chọn">Lệch DN (%) (%)</th>
+    <th class="ttip" data-tip="vs Benchmark được chọn">Lệch SL KV (%)</th>
   </tr></thead><tbody>`;
   let totR = {dn:0,hdv:0,tnt:0,dv:0,kv:0,n:0,nld:0,ncb:0};
   PHONGS.forEach((p,i)=>{
@@ -607,10 +614,10 @@ function renderLD() {
   let h=`<thead><tr><th>#</th><th>Mã CB</th><th style="min-width:140px">Họ &amp; Tên</th><th>Phòng</th><th style="min-width:160px">Chức vụ</th>
     <th class="ld-th">DN CK (tỷ)</th><th class="ld-th">HĐV (tỷ)</th><th class="ld-th">TNT (tỷ)</th>
     <th class="ld-th">DV ròng (tr)</th><th class="ld-th">NIM HĐV (%)</th><th class="ld-th">NIM TD TT (%)</th><th class="ld-th">SL KV</th>
-    <th class="bench-ld-th ttip" data-tip="So Dư nợ vs benchmark">vs BM – DN</th>
-    <th class="bench-ld-th ttip" data-tip="So HĐV vs benchmark">vs BM – HĐV</th>
-    <th class="bench-ld-th ttip" data-tip="So NIM TD TT vs benchmark">vs BM – NIM TT</th>
-    <th class="bench-ld-th ttip" data-tip="So SL KV vs benchmark">vs BM – KV</th>
+    <th class="bench-ld-th ttip" data-tip="Lệch so với giá trị tham chiếu – Dư nợ">Lệch DN (%) (%)</th>
+    <th class="bench-ld-th ttip" data-tip="Lệch so với giá trị tham chiếu – HĐV">Lệch HĐV (%) (%)</th>
+    <th class="bench-ld-th ttip" data-tip="Lệch so với giá trị tham chiếu – NIM TD TT">Lệch NIM TT</th>
+    <th class="bench-ld-th ttip" data-tip="Lệch so với giá trị tham chiếu – SL Khoản vay">Lệch SL KV (%)</th>
   </tr></thead><tbody>`;
   let idx=0, prevP='';
   PHONGS.forEach(p=>{
@@ -672,10 +679,10 @@ function renderCB() {
   let h=`<thead><tr><th>#</th><th>Mã CB</th><th style="min-width:130px">Họ &amp; Tên</th><th>Phòng</th><th style="min-width:160px">Chức vụ</th>
     <th class="cb-th">DN CK (tỷ)</th><th class="cb-th">HĐV (tỷ)</th><th class="cb-th">TNT (tỷ)</th>
     <th class="cb-th">DV ròng (tr)</th><th class="cb-th">NIM HĐV (%)</th><th class="cb-th">NIM TD TT (%)</th><th class="cb-th">SL KV</th>
-    <th class="bench-th ttip" data-tip="So Dư nợ vs benchmark">vs BM – DN</th>
-    <th class="bench-th ttip" data-tip="So HĐV vs benchmark">vs BM – HĐV</th>
-    <th class="bench-th ttip" data-tip="So NIM TD TT vs benchmark">vs BM – NIM TT</th>
-    <th class="bench-th ttip" data-tip="So SL KV vs benchmark">vs BM – KV</th>
+    <th class="bench-th ttip" data-tip="Lệch so với giá trị tham chiếu – Dư nợ">Lệch DN (%) (%)</th>
+    <th class="bench-th ttip" data-tip="Lệch so với giá trị tham chiếu – HĐV">Lệch HĐV (%) (%)</th>
+    <th class="bench-th ttip" data-tip="Lệch so với giá trị tham chiếu – NIM TD TT">Lệch NIM TT</th>
+    <th class="bench-th ttip" data-tip="Lệch so với giá trị tham chiếu – SL Khoản vay">Lệch SL KV (%)</th>
   </tr></thead><tbody>`;
   let idx=0;
   PHONGS.forEach(p=>{
@@ -773,11 +780,11 @@ function renderSS() {
   document.getElementById('bench-info-ss').innerHTML=benchInfoHTML(benchSS);
 
   let h=`<thead><tr><th>Mã CB</th><th style="min-width:130px">Họ &amp; Tên</th><th>Phòng</th><th>Loại</th>
-    <th>DN CK</th><th>BM</th><th>Lệch DN</th>
-    <th>HĐV CK</th><th>BM</th><th>Lệch HĐV</th>
-    <th>TNT (tỷ)</th><th>BM</th><th>Lệch TNT</th>
-    <th>NIM TD TT</th><th>BM</th><th>Lệch NIM TT</th>
-    <th>SL KV</th><th>BM</th><th>Lệch KV</th>
+    <th>DN CK</th><th>Tham chiếu</th><th>Lệch DN (%)</th>
+    <th>HĐV CK</th><th>Tham chiếu</th><th>Lệch HĐV (%)</th>
+    <th>TNT (tỷ)</th><th>Tham chiếu</th><th>Lệch TNT (%)</th>
+    <th>NIM TD TT</th><th>Tham chiếu</th><th>Lệch NIM TT</th>
+    <th>SL KV</th><th>Tham chiếu</th><th>Lệch SL KV (%)</th>
   </tr></thead><tbody>`;
   let prevP='';
   PHONGS.forEach(p=>{
@@ -853,7 +860,19 @@ function mkChart(id, type, data, opts) {
 }
 
 // ── IMPORT ───────────────────────────────────────────────────
-const IMP = {files:{}, raw:{}, merged:[]};
+const IMP = {files:{}, raw:{}, merged:[], date:''};
+
+function updateDateBadge(){
+  var d = document.getElementById('imp-date').value;
+  if(!d){ IMP.date=''; document.getElementById('imp-date-preview').style.display='none'; return; }
+  // Format DD/MM/YYYY
+  var parts = d.split('-');
+  var fmt = parts[2]+'/'+parts[1]+'/'+parts[0];
+  IMP.date = fmt;
+  var prev = document.getElementById('imp-date-preview');
+  prev.textContent = '→ Sẽ hiển thị: Kỳ ' + fmt;
+  prev.style.display = 'inline';
+}
 const LD_CVS_NORM = LD_CVS.map(s=>s.toLowerCase());
 const PHONG_BL_NORM = ['phòng khách hàng cá nhân','phòng giao dịch lương định của','phòng giao dịch nam cao','phòng giao dịch hào nam','phòng giao dịch west lake','phòng giao dịch khách hàng'];
 const PHONG_SHORT_MAP = {'phòng khách hàng cá nhân':'P. KHCN','phòng giao dịch lương định của':'PGD Lương Định Của','phòng giao dịch nam cao':'PGD Nam Cao','phòng giao dịch hào nam':'PGD Hào Nam','phòng giao dịch west lake':'PGD West Lake','phòng giao dịch khách hàng':'P. GD KH'};
@@ -900,9 +919,14 @@ function iBuildMap() {
   let h='';
   Object.keys(IMP.raw).forEach(idx=>{
     const rows=IMP.raw[idx], cols=rows.length?Object.keys(rows[0]):[];
-    const labels={1:['Mã cán bộ','Dư nợ tín dụng cuối kỳ','Huy động vốn cuối kỳ','Thu nhập thuần từ dịch vụ','Thu nhập thuần','Nim huy động vốn'],
-                  2:['Mã cán bộ','SL Khoản vay'],3:['Mã CB','Tên CB','Chức vụ','Phòng']};
-    h+=`<p style="font-size:11px;font-weight:700;color:var(--gray);margin:${idx>1?'12px':'0'} 0 6px">File ${idx}: ${rows.length} dòng</p>`;
+    const labels={
+      1:['Cột B – Mã cán bộ','Cột C – Dư nợ TĐ cuối kỳ','Cột E – HĐV cuối kỳ',
+         'Cột G – DV ròng','Cột H – Thu nhập thuần','Cột I – NIM HĐV (%)','Cột J – NIM TD danh nghĩa','Cột K – NIM TD thực tế'],
+      2:['Mã cán bộ','SL Khoản vay'],
+      3:['Mã CB','Tên CB','Chức vụ','Phòng']};
+    var fileLabels = {1:'File 1 – Quy mô & Hiệu quả (đọc cột cố định B,C,E,G,H,I,J,K)',
+                        2:'File 2 – Số lượng Khoản vay', 3:'File 3 – Danh sách Cán bộ'};
+    h+=`<p style="font-size:11px;font-weight:700;color:var(--gray);margin:${idx>1?'12px':'0'} 0 6px">${fileLabels[idx]||('File '+idx)}: ${rows.length} dòng</p>`;
     (labels[idx]||[]).forEach(c=>{
       const matched=cols.find(col=>col.toLowerCase().includes(c.toLowerCase().split(' ')[0]))||'';
       h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px">
@@ -948,20 +972,37 @@ function iBuildPreview() {
   });
   if(kv2.length) logs.push(`<span class="ok">✓ File KV: ${kv2.length} dòng → ${Object.keys(kvMap).length} CB</span>`);
 
+  // ── Đọc file QM theo vị trí cột cố định (bỏ qua hàng header) ──
+  // Cột B(idx1)=Mã CB, C(2)=DN cuối kỳ, E(4)=HĐV cuối kỳ,
+  // G(6)=DV ròng, H(7)=TNT, I(8)=NIM HĐV, J(9)=NIM TD DN, K(10)=NIM TD TT
   const qmMap={};
-  qm1.forEach(r=>{
-    const ma=gStr(findV(r,'mã cán')||findV(r,'ma can')||findV(r,'mã cb')||'');
-    if(!ma||ma==='nan') return;
-    if(!qmMap[ma]) qmMap[ma]={dn:0,hdv:0,tdv:0,tnt:0,nims:[],nimt:[],nimtt:[]};
-    qmMap[ma].dn +=(parseFloat(findV(r,'nợ tín dụng cuối')||findV(r,'du no cuoi')||0)||0);
-    qmMap[ma].hdv+=(parseFloat(findV(r,'huy động vốn cuối')||findV(r,'hdv cuoi')||0)||0);
-    qmMap[ma].tdv+=(parseFloat(findV(r,'dịch vụ')||findV(r,'dich vu')||findV(r,'thu nhap thuan tu')||0)||0);
-    qmMap[ma].tnt+=(parseFloat(findV(r,'thu nhập thuần')||findV(r,'thu nhap thuan ')||0)||0);
-    const n=parseFloat(findV(r,'nim huy')||0); if(n) qmMap[ma].nims.push(n);
-    const nt=parseFloat(findV(r,'nim tín dụng danh')||0); if(nt) qmMap[ma].nimt.push(nt);
-    const ntt=parseFloat(findV(r,'nim tín dụng thực')||0); if(ntt) qmMap[ma].nimtt.push(ntt);
-  });
-  if(qm1.length) logs.push(`<span class="ok">✓ File QM: ${qm1.length} dòng → ${Object.keys(qmMap).length} CB</span>`);
+  if(qm1.length){
+    // Detect header row: row where col B is text (not a number)
+    var headerRowIdx = 0;
+    for(var hi=0; hi<Math.min(5,qm1.length); hi++){
+      var row0 = Object.values(qm1[hi]);
+      var colB = row0[1]; // index 1 = column B
+      if(colB && isNaN(parseFloat(colB))){ headerRowIdx = hi; break; }
+    }
+    var dataRows = qm1.slice(headerRowIdx+1);
+    dataRows.forEach(function(r){
+      var vals = Object.values(r);
+      var ma = gStr(vals[1]); // col B
+      if(!ma || ma==='' || ma==='nan' || ma==='null') return;
+      if(!qmMap[ma]) qmMap[ma]={dn:0,hdv:0,tdv:0,tnt:0,nims:[],nimt:[],nimtt:[]};
+      qmMap[ma].dn  += parseFloat(vals[2])||0;  // col C - Dư nợ TĐ cuối kỳ
+      qmMap[ma].hdv += parseFloat(vals[4])||0;  // col E - HĐV cuối kỳ
+      qmMap[ma].tdv += parseFloat(vals[6])||0;  // col G - DV ròng (thu nhập thuần từ DV)
+      qmMap[ma].tnt += parseFloat(vals[7])||0;  // col H - Thu nhập thuần
+      var ni  = parseFloat(vals[8]);  // col I - NIM HĐV
+      var nj  = parseFloat(vals[9]);  // col J - NIM TD danh nghĩa
+      var nk  = parseFloat(vals[10]); // col K - NIM TD thực tế
+      if(!isNaN(ni)&&ni!==0) qmMap[ma].nims.push(ni);
+      if(!isNaN(nj)&&nj!==0) qmMap[ma].nimt.push(nj);
+      if(!isNaN(nk)&&nk!==0) qmMap[ma].nimtt.push(nk);
+    });
+    logs.push('<span class="ok">✓ File QM: '+qm1.length+' dòng → '+Object.keys(qmMap).length+' CB (đọc theo cột B,C,E,G,H,I,J,K)</span>');
+  }
 
   const merged=bl.map(cb=>{
     const qm=qmMap[cb.ma], kv=kvMap[cb.ma]||0;
@@ -1014,7 +1055,8 @@ function iApply() {
   bieuRendered=false;
 
   // Update header
-  document.getElementById('src-badge').textContent='📥 Dữ liệu đã import';
+  var dateLabel = IMP.date ? ' – Kỳ '+IMP.date : '';
+  document.getElementById('src-badge').textContent='📥 Dữ liệu đã import'+dateLabel;
   document.getElementById('src-badge').className='data-badge badge-import';
   document.getElementById('period-badge').textContent=DATA.length+' Cán bộ';
 
@@ -1038,7 +1080,9 @@ function iApply() {
 }
 
 function iReset() {
-  IMP.files={}; IMP.raw={}; IMP.merged=[];
+  IMP.files={}; IMP.raw={}; IMP.merged=[]; IMP.date='';
+  var df=document.getElementById('imp-date'); if(df) df.value='';
+  var dp=document.getElementById('imp-date-preview'); if(dp){dp.textContent='';dp.style.display='none';}
   [1,2,3].forEach(i=>{
     const z=document.getElementById('fz'+i);
     z.classList.remove('loaded','drag');
