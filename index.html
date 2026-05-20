@@ -410,6 +410,35 @@ canvas{max-height:260px}
               </button>
             </div>
           </div>
+          <!-- GitHub Auto-deploy config -->
+          <div style="background:#E3F2FD;border-radius:7px;padding:9px 12px;margin-bottom:10px;border-left:3px solid #1565C0">
+            <div style="font-size:11px;font-weight:700;color:#0D47A1;margin-bottom:6px">&#128640; Tự động push lên GitHub sau khi Áp dụng:</div>
+            <div style="display:grid;gap:6px">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:11px;color:var(--gray);width:100px;flex-shrink:0">GitHub Token:</span>
+                <input id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                  style="flex:1;font-size:11px;padding:5px 9px;border:1px solid #90CAF9;border-radius:5px">
+              </div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:11px;color:var(--gray);width:100px;flex-shrink:0">Repo (user/repo):</span>
+                <input id="gh-repo" type="text" placeholder="username/ten-repo"
+                  style="flex:1;font-size:11px;padding:5px 9px;border:1px solid #90CAF9;border-radius:5px">
+              </div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:11px;color:var(--gray);width:100px;flex-shrink:0">Tên file:</span>
+                <input id="gh-file" type="text" placeholder="index.html" value="index.html"
+                  style="flex:1;font-size:11px;padding:5px 9px;border:1px solid #90CAF9;border-radius:5px">
+                <button onclick="saveGHConfig()"
+                  style="white-space:nowrap;font-size:11px;padding:5px 10px;border:1px solid #1565C0;border-radius:5px;background:#fff;color:#1565C0;cursor:pointer">
+                  &#128190; Lưu cấu hình
+                </button>
+              </div>
+            </div>
+            <div id="gh-config-status" style="font-size:10px;color:var(--gray);margin-top:5px"></div>
+            <div style="font-size:10px;color:#5C6BC0;margin-top:4px">
+              Tạo token tại: <b>github.com → Settings → Developer settings → Personal access tokens → Fine-grained</b> → chọn quyền <b>Contents: Read and write</b>
+            </div>
+          </div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <button onclick="syncGoogleSheets()" id="gs-sync-btn"
               style="background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer">
@@ -518,7 +547,7 @@ canvas{max-height:260px}
       </div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="gTab('tq',null);document.querySelectorAll('.tab')[0].click()">📊 Xem Tổng Quan</button>
-        <button class="btn btn-primary" onclick="exportUpdatedHTML()" style="background:#1565C0;border-color:#1565C0;color:#fff">💾 Lưu dữ liệu mới (HTML)</button>
+        <button class="btn btn-primary" onclick="exportUpdatedHTML()" style="background:#1565C0;border-color:#1565C0;color:#fff">💾 Tải HTML (dự phòng)</button>
         <button class="btn btn-secondary" onclick="iReset()">🔄 Import bộ khác</button>
       </div>
     </div>
@@ -1257,6 +1286,7 @@ function iApply() {
   renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
 
   saveDataToGAS();
+  autoDeployToGitHub();
 
   const hasQM=DATA.filter(r=>r.dn!=null).length;
   document.getElementById('imp-done-msg').textContent=`${DATA.length} CB đã được load. ${hasQM} CB có dữ liệu Quy mô & Hiệu quả.`;
@@ -1414,7 +1444,7 @@ if(initPanel){ initPanel.style.display='block'; }
     <button class="btn-pdf" id="btn-export-html" onclick="exportUpdatedHTML()"
       style="background:#1565C0;display:none"
       title="Xuất file HTML với dữ liệu mới để upload lên GitHub/Netlify">
-      💾 Lưu dữ liệu mới (HTML)
+      💾 Tải HTML (dự phòng)
     </button>
   </div>
 </div>
@@ -1621,33 +1651,71 @@ async function exportCurrentTab() {
   setTimeout(() => { prog.textContent=''; prog.classList.remove('show'); }, 3000);
 }
 function exportUpdatedHTML() {
-  var btn = document.getElementById('btn-export-html');
+  var btn  = document.getElementById('btn-export-html');
   var prog = document.getElementById('pdf-prog');
   if(btn) btn.disabled = true;
-  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Đang tạo file HTML...'; }
-  try {
-    var fullHTML = document.documentElement.outerHTML;
-    var newSeedJSON = JSON.stringify(DATA);
-    fullHTML = fullHTML.replace(/const SEED = \[[\s\S]*?\];/, 'const SEED = ' + newSeedJSON + ';');
-    if(IMP.date) {
-      fullHTML = fullHTML.replace(/id="src-badge">[^<]*/, 'id="src-badge">\uD83D\uDCC5 D\u1EEF li\u1EC7u: ' + IMP.date);
-      fullHTML = fullHTML.replace(/id="period-badge">[^<]*/, 'id="period-badge">' + DATA.length + ' C\u00E1n b\u1ED9');
-    }
-    var blob = new Blob([fullHTML], {type:'text/html;charset=utf-8'});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    var today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-    var ds = IMP.date ? IMP.date.replace(/\//g,'') : today;
-    a.download = 'BIDV_TrangTien_Dashboard_' + ds + '.html';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
-    if(prog) prog.textContent = '\u2705 \u0110\u00E3 t\u1EA3i xong! \u0110\u1ED5i t\u00EAn th\u00E0nh index.html r\u1ED3i upload l\u00EAn GitHub.';
-  } catch(e) {
-    if(prog) prog.textContent = '\u274C L\u1ED7i: ' + e.message;
-  }
-  if(btn) btn.disabled = false;
-  setTimeout(function(){ if(prog){prog.textContent='';prog.classList.remove('show');} }, 6000);
+  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Đang tải source...'; }
+
+  // Fetch source gốc của trang này, thay SEED bằng DATA hiện tại
+  fetch(window.location.href)
+    .then(function(r){ return r.text(); })
+    .then(function(html){
+      if(prog) prog.textContent = '⏳ Đang ghi dữ liệu mới...';
+
+      // Thay const SEED = [...] bằng DATA hiện tại
+      var newSeed = 'const SEED = ' + JSON.stringify(DATA) + ';';
+      html = html.replace(/const SEED = \[[\s\S]*?\];/, newSeed);
+
+      // Cập nhật header badge nếu có ngày
+      if(IMP.date){
+        html = html.replace(
+          /id="src-badge"[^>]*>[^<]*/,
+          'id="src-badge" class="data-badge badge-import">📅 Dữ liệu: ' + IMP.date
+        );
+        html = html.replace(
+          /id="period-badge">[^<]*/,
+          'id="period-badge">' + DATA.length + ' Cán bộ'
+        );
+      }
+
+      // Tải file xuống
+      var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href   = url;
+      var ds   = IMP.date ? IMP.date.replace(/\//g,'') : new Date().toISOString().slice(0,10).replace(/-/g,'');
+      a.download = 'BIDV_TrangTien_Dashboard_' + ds + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      if(prog) prog.textContent = '✅ Đã tải xong! Đổi tên thành index.html rồi upload lên GitHub.';
+      if(btn) btn.disabled = false;
+      setTimeout(function(){ if(prog){prog.textContent='';prog.classList.remove('show');} }, 6000);
+    })
+    .catch(function(e){
+      // Fallback: nếu fetch bị block (file:// protocol), dùng outerHTML
+      if(prog) prog.textContent = '⏳ Dùng fallback...';
+      try {
+        var html = document.documentElement.outerHTML;
+        var newSeed = 'const SEED = ' + JSON.stringify(DATA) + ';';
+        html = html.replace(/const SEED = \[[\s\S]*?\];/, newSeed);
+        var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href   = url;
+        var ds   = IMP.date ? IMP.date.replace(/\//g,'') : new Date().toISOString().slice(0,10).replace(/-/g,'');
+        a.download = 'BIDV_TrangTien_Dashboard_' + ds + '.html';
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+        if(prog) prog.textContent = '✅ Đã tải! (fallback mode)';
+      } catch(e2){
+        if(prog) prog.textContent = '❌ Lỗi: ' + e2.message;
+      }
+      if(btn) btn.disabled = false;
+      setTimeout(function(){ if(prog){prog.textContent='';prog.classList.remove('show');} }, 6000);
+    });
 }
 
 // ── GOOGLE SHEET INTEGRATION ─────────────────────────────────
@@ -1875,6 +1943,7 @@ async function syncGoogleSheets() {
 // Load saved URLs when page loads
 window.addEventListener('load', function(){
   loadSavedGSUrls();
+  loadGHConfig();
   // Pre-validate default URLs
   ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id,i){
     validateGSUrl(id,'gs-status-'+(i+1));
@@ -1935,6 +2004,137 @@ document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
 document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
 document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
 document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
+
+// ============================================================
+// GITHUB AUTO-DEPLOY
+// ============================================================
+function saveGHConfig(){
+  var token  = document.getElementById('gh-token').value.trim();
+  var repo   = document.getElementById('gh-repo').value.trim();
+  var file   = document.getElementById('gh-file').value.trim() || 'index.html';
+  if(!token || !repo){
+    document.getElementById('gh-config-status').textContent = '⚠️ Cần nhập đủ Token và Repo';
+    return;
+  }
+  try{
+    localStorage.setItem('bidv_gh_token', token);
+    localStorage.setItem('bidv_gh_repo',  repo);
+    localStorage.setItem('bidv_gh_file',  file);
+  }catch(e){}
+  document.getElementById('gh-config-status').textContent = '✅ Đã lưu — sẽ tự push sau khi Áp dụng';
+  document.getElementById('gh-config-status').style.color = 'var(--green)';
+}
+
+function loadGHConfig(){
+  try{
+    var t = localStorage.getItem('bidv_gh_token');
+    var r = localStorage.getItem('bidv_gh_repo');
+    var f = localStorage.getItem('bidv_gh_file');
+    if(t){ var el=document.getElementById('gh-token'); if(el) el.value=t; }
+    if(r){ var el=document.getElementById('gh-repo');  if(el) el.value=r; }
+    if(f){ var el=document.getElementById('gh-file');  if(el) el.value=f; }
+    if(t && r) document.getElementById('gh-config-status').textContent = '✅ Cấu hình đã lưu sẵn';
+  }catch(e){}
+}
+
+async function pushToGitHub(htmlContent){
+  var token, repo, file;
+  try{
+    token = localStorage.getItem('bidv_gh_token') || '';
+    repo  = localStorage.getItem('bidv_gh_repo')  || '';
+    file  = localStorage.getItem('bidv_gh_file')  || 'index.html';
+  }catch(e){ return {ok:false, msg:'Không đọc được config'}; }
+
+  if(!token || !repo) return {ok:false, msg:'Chưa cấu hình GitHub Token/Repo'};
+
+  var apiBase = 'https://api.github.com/repos/' + repo + '/contents/' + file;
+
+  try{
+    // Bước 1: Lấy SHA của file hiện tại (bắt buộc để update)
+    var getResp = await fetch(apiBase, {
+      headers:{
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    var sha = '';
+    if(getResp.ok){
+      var fileData = await getResp.json();
+      sha = fileData.sha || '';
+    } else if(getResp.status !== 404){
+      return {ok:false, msg:'Lỗi lấy file: HTTP ' + getResp.status};
+    }
+
+    // Bước 2: Encode HTML → base64
+    var b64 = btoa(unescape(encodeURIComponent(htmlContent)));
+
+    // Bước 3: Commit
+    var now    = new Date().toLocaleString('vi-VN');
+    var body   = {
+      message: 'Dashboard update ' + now,
+      content: b64,
+      branch:  'main'
+    };
+    if(sha) body.sha = sha;
+
+    var putResp = await fetch(apiBase, {
+      method:  'PUT',
+      headers:{
+        'Authorization': 'token ' + token,
+        'Accept':        'application/vnd.github.v3+json',
+        'Content-Type':  'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if(putResp.ok || putResp.status === 201){
+      return {ok:true, msg:'✅ Đã push lên GitHub! GitHub Pages sẽ cập nhật trong ~30 giây.'};
+    } else {
+      var err = await putResp.json();
+      return {ok:false, msg:'Lỗi push: ' + (err.message||putResp.status)};
+    }
+  } catch(e){
+    return {ok:false, msg:'Lỗi mạng: ' + e.message};
+  }
+}
+
+// Gọi từ iApply sau khi save GAS
+async function autoDeployToGitHub(){
+  var token = '';
+  try{ token = localStorage.getItem('bidv_gh_token')||''; }catch(e){}
+  if(!token) return; // Chưa cấu hình → bỏ qua
+
+  var prog = document.getElementById('pdf-prog');
+  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Đang push lên GitHub...'; }
+
+  try{
+    // Fetch source gốc
+    var r = await fetch(window.location.href);
+    var html = await r.text();
+
+    // Thay SEED bằng DATA mới
+    var newSeed = 'const SEED = ' + JSON.stringify(DATA) + ';';
+    html = html.replace(/const SEED = \[[\s\S]*?\];/, newSeed);
+
+    // Cập nhật badge nếu có ngày
+    if(IMP.date){
+      html = html.replace(/id="src-badge"[^>]*>[^<]*/, 'id="src-badge" class="data-badge badge-import">📅 Dữ liệu: '+IMP.date);
+      html = html.replace(/id="period-badge">[^<]*/, 'id="period-badge">'+DATA.length+' Cán bộ');
+    }
+
+    var result = await pushToGitHub(html);
+    if(prog){
+      prog.textContent = result.msg;
+      setTimeout(function(){ prog.textContent=''; prog.classList.remove('show'); }, 8000);
+    }
+  } catch(e){
+    if(prog){
+      prog.textContent = '⚠️ Auto-deploy lỗi: ' + e.message;
+      setTimeout(function(){ prog.textContent=''; prog.classList.remove('show'); }, 5000);
+    }
+  }
+}
 
 function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
 // Close modal on backdrop click
