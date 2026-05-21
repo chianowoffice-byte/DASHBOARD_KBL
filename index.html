@@ -687,7 +687,7 @@ function gTab(id, el) {
     el.classList.add('active');
   }
   if (id==='bieu' && !bieuRendered) { renderBieu(); bieuRendered=true; }
-  if (id==='ql') { renderQL(); }
+  if (id==='ql') { initCBActive(); renderQL(); }
   currentTabId = id;
 }
 
@@ -1309,6 +1309,7 @@ function iApply() {
   if(!IMP.merged.length) return;
   DATA=filterExclude(JSON.parse(JSON.stringify(IMP.merged)));
   CB_ACTIVE={}; // reset khi có data mới
+  initCBActive(); // khởi tạo ngay
   bieuRendered=false;
 
   // Update header
@@ -1459,6 +1460,7 @@ async function loadDataFromGAS(){
     setSaveStatus('✅ Tải từ GAS thành công'+(ts?' ('+ts+')':''),'var(--green)');
     // Re-render toàn bộ dashboard với data mới
     bieuRendered=false;
+    initCBActive(); // Đảm bảo CB_ACTIVE luôn được init với data mới
     renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
     refreshDateDisplay(); // Gọi CUỐI CÙNG, sau tất cả render
   } catch(e){
@@ -1466,6 +1468,9 @@ async function loadDataFromGAS(){
     if(e.message!=='empty') console.warn('loadDataFromGAS:',e.message);
   }
 }
+
+// Khởi tạo CB_ACTIVE với SEED data
+initCBActive();
 
 // Force-init display state via style (immune to CSS bleed from @media print)
 document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
@@ -2221,50 +2226,92 @@ function getActiveData(){
 function renderQL(){
   initCBActive();
   var actCount = DATA.filter(function(r){ return CB_ACTIVE[r.ma]!==false; }).length;
+  var ldTotal  = DATA.filter(isLD).length;
+  var cbTotal  = DATA.filter(function(r){ return !isLD(r); }).length;
   var ldAct = DATA.filter(function(r){ return isLD(r)&&CB_ACTIVE[r.ma]!==false; }).length;
   var cbAct = DATA.filter(function(r){ return !isLD(r)&&CB_ACTIVE[r.ma]!==false; }).length;
 
   document.getElementById('kpi-ql').innerHTML=[
-    {l:'Tổng CB',    v:DATA.length,   s:'trong hệ thống',c:''},
-    {l:'Đang đánh giá',v:actCount,    s:'CB được chọn',  c:'green'},
-    {l:'Lãnh đạo',  v:ldAct,         s:'được chọn',     c:''},
-    {l:'Cán bộ',    v:cbAct,         s:'được chọn',     c:'gold'},
-    {l:'Bỏ qua',    v:DATA.length-actCount,s:'CB',       c:'orange'},
+    {l:'Tổng CB',       v:DATA.length,         s:'trong hệ thống', c:''},
+    {l:'Đang đánh giá', v:actCount,            s:'CB được chọn',   c:'green'},
+    {l:'Lãnh đạo',      v:ldAct+'/'+ldTotal,   s:'đang được chọn', c:''},
+    {l:'Cán bộ',        v:cbAct+'/'+cbTotal,   s:'đang được chọn', c:'gold'},
+    {l:'Bỏ qua',        v:DATA.length-actCount,s:'CB',             c:'orange'},
   ].map(function(k){
     return '<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div><div class="kpi-val">'+k.v+'</div><div class="kpi-sub">'+k.s+'</div></div>';
   }).join('');
 
+  // ── Tách 2 nhóm: Lãnh đạo và Cán bộ ──
   var h='<thead><tr>'
-    +'<th style="width:40px">Đánh giá</th>'
-    +'<th>Mã CB</th><th style="min-width:140px">Họ &amp; Tên</th>'
-    +'<th>Phòng</th><th style="min-width:160px">Chức vụ</th>'
-    +'<th>Loại</th><th>Có dữ liệu</th>'
+    +'<th style="width:44px;text-align:center">✓</th>'
+    +'<th>Mã CB</th>'
+    +'<th style="min-width:140px">Họ &amp; Tên</th>'
+    +'<th>Phòng</th>'
+    +'<th style="min-width:170px">Chức vụ</th>'
+    +'<th>Loại</th>'
+    +'<th>Dữ liệu</th>'
     +'</tr></thead><tbody>';
 
-  var prevP='';
+  // Helper render row
+  function rowHTML(r, rowIdx){
+    var active  = CB_ACTIVE[r.ma]!==false;
+    var hasData = r.dn!=null||r.kv>0;
+    var rowBg   = active
+      ? (isLD(r) ? 'background:#EBF8F7' : (rowIdx%2?'background:var(--alt)':'background:#fff'))
+      : 'background:#FFEBEE';
+    return '<tr style="'+rowBg+'" id="row-ql-'+r.ma+'">'
+      +'<td style="text-align:center;vertical-align:middle;padding:6px 0">'
+      +'<input type="checkbox"'+(active?' checked':'')
+      +' onchange="toggleCB(\''+r.ma+'\',this.checked)"'
+      +' style="width:17px;height:17px;accent-color:var(--teal);cursor:pointer">'
+      +'</td>'
+      +'<td class="tc" style="font-size:11px;color:var(--gray)">'+r.ma+'</td>'
+      +'<td class="fw">'+r.ten+'</td>'
+      +'<td style="font-size:12px">'+r.phong+'</td>'
+      +'<td style="font-size:11px;color:var(--gray)">'+r.chucvu+'</td>'
+      +'<td class="tc"><span class="badge '+(isLD(r)?'b-ld':'b-cb')+'">'+(isLD(r)?'👑 LD':'👤 CB')+'</span></td>'
+      +'<td class="tc">'+(hasData
+        ?'<span style="color:var(--green);font-weight:700">✓</span>'
+        :'<span class="na">—</span>')+'</td>'
+      +'</tr>';
+  }
+
+  // ── NHÓM 1: LÃNH ĐẠO ──────────────────────────────
+  h+='<tr><td colspan="7" style="background:var(--ld);color:#fff;padding:8px 14px;font-size:12px;font-weight:700">'
+    +'👑 LÃNH ĐẠO (PTP / PGĐ Kinh doanh)'
+    +'&nbsp;&nbsp;<span style="font-weight:400;opacity:.8;font-size:11px">('
+    +ldAct+'/'+ldTotal+' được chọn)</span>'
+    +'<span style="margin-left:auto;float:right;display:flex;gap:6px">'
+    +'<button onclick="selectGroup(true,true)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Chọn tất cả</button>'
+    +'<button onclick="selectGroup(false,true)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Bỏ tất cả</button>'
+    +'</span>'
+    +'</td></tr>';
+
   PHONGS.forEach(function(p){
-    var rows=DATA.filter(function(r){return r.phong===p;});
+    var rows = DATA.filter(function(r){ return r.phong===p && isLD(r); });
     if(!rows.length) return;
-    h+='<tr class="ph-row"><td colspan="7" style="background:#5C6BC0!important">📌 '+p+'</td></tr>';
-    rows.forEach(function(r,i){
-      var active = CB_ACTIVE[r.ma]!==false;
-      var bg = active?(isLD(r)?'background:#EBF8F7':'background:'+(i%2?'var(--alt)':'#fff')):'background:#FFEBEE';
-      var hasData = r.dn!=null||r.kv>0;
-      h+='<tr style="'+bg+'" id="row-ql-'+r.ma+'">'
-        +'<td class="tc">'
-        +'<input type="checkbox" '+(active?'checked':'')
-        +' onchange="toggleCB(\''+r.ma+'\',this.checked)"'
-        +' style="width:16px;height:16px;accent-color:var(--teal);cursor:pointer">'
-        +'</td>'
-        +'<td class="tc">'+r.ma+'</td>'
-        +'<td class="fw">'+r.ten+'</td>'
-        +'<td>'+r.phong+'</td>'
-        +'<td style="font-size:11px">'+r.chucvu+'</td>'
-        +'<td class="tc"><span class="badge '+(isLD(r)?'b-ld':'b-cb')+'">'+(isLD(r)?'👑 LD':'👤 CB')+'</span></td>'
-        +'<td class="tc">'+(hasData?'<span style="color:var(--green)">✓ Có</span>':'<span class="na">—</span>')+'</td>'
-        +'</tr>';
-    });
+    h+='<tr class="ph-row ld"><td colspan="7">📌 '+p+'</td></tr>';
+    rows.forEach(function(r,i){ h+=rowHTML(r,i); });
   });
+
+  // ── NHÓM 2: CÁN BỘ CHUYÊN MÔN ────────────────────
+  h+='<tr><td colspan="7" style="background:var(--cb);color:#fff;padding:8px 14px;font-size:12px;font-weight:700">'
+    +'👤 CÁN BỘ CHUYÊN MÔN'
+    +'&nbsp;&nbsp;<span style="font-weight:400;opacity:.8;font-size:11px">('
+    +cbAct+'/'+cbTotal+' được chọn)</span>'
+    +'<span style="margin-left:auto;float:right;display:flex;gap:6px">'
+    +'<button onclick="selectGroup(true,false)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Chọn tất cả</button>'
+    +'<button onclick="selectGroup(false,false)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Bỏ tất cả</button>'
+    +'</span>'
+    +'</td></tr>';
+
+  PHONGS.forEach(function(p){
+    var rows = DATA.filter(function(r){ return r.phong===p && !isLD(r); });
+    if(!rows.length) return;
+    h+='<tr class="ph-row cb"><td colspan="7">📌 '+p+'</td></tr>';
+    rows.forEach(function(r,i){ h+=rowHTML(r,i); });
+  });
+
   h+='</tbody>';
   document.getElementById('tbl-ql').innerHTML=h;
 }
@@ -2292,6 +2339,13 @@ function toggleCB(ma, checked){
 
 function selectAllCB(val){
   DATA.forEach(function(r){ CB_ACTIVE[r.ma]=val; });
+  renderQL();
+}
+
+function selectGroup(val, ldGroup){
+  DATA.forEach(function(r){
+    if(ldGroup ? isLD(r) : !isLD(r)) CB_ACTIVE[r.ma]=val;
+  });
   renderQL();
 }
 
