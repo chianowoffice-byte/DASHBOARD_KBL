@@ -215,7 +215,7 @@ canvas{max-height:260px}
   <div class="tab" onclick="gTab('ss',this)">⚖️ So Sánh</div>
   <div class="tab" onclick="gTab('bieu',this)">📉 Biểu Đồ</div>
   <div class="tab" onclick="gTab('ql',this)">⚙️ Quản lý CB</div>
-<div class="tab" onclick="gTab('imp',this)">🔄 Import</div>
+  <div class="tab" onclick="gTab('imp',this)">🔄 Import</div>
 </div>
 
 <div class="content">
@@ -342,21 +342,24 @@ canvas{max-height:260px}
   </div>
 </div>
 
+
 <!-- ══ TAB QUẢN LÝ CÁN BỘ ══ -->
 <div id="tab-ql" class="tab-panel">
   <div class="kpi-grid" id="kpi-ql"></div>
   <div class="bench-strip" style="margin-bottom:14px">
-    <span class="bench-label" style="font-size:12px;font-weight:700;color:var(--teal-d)">
-      ⚙️ Chọn cán bộ đưa vào đánh giá — tích ✓ để bao gồm trong báo cáo và tính trung bình
-    </span>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="selectAllCB(true)" style="font-size:11px;padding:5px 12px">✓ Chọn tất cả</button>
-      <button class="btn btn-secondary" onclick="selectAllCB(false)" style="font-size:11px;padding:5px 12px">✗ Bỏ tất cả</button>
-      <button class="btn btn-primary" onclick="applyQLSelection()" style="font-size:11px;padding:5px 12px;background:var(--green)">▶ Áp dụng</button>
+    <div style="font-size:12px;font-weight:700;color:var(--teal-d)">
+      ⚙️ Tích ✓ để đưa CB vào tính toán &amp; tính trung bình &nbsp;—&nbsp;
+      <span style="font-weight:400;font-size:11px;color:var(--gray)">Nhấn <b>▶ Áp dụng</b> để cập nhật benchmark</span>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary"   onclick="qlSelectAll(true)"  style="font-size:11px;padding:5px 12px">✓ Chọn tất cả</button>
+      <button class="btn btn-secondary" onclick="qlSelectAll(false)" style="font-size:11px;padding:5px 12px">✗ Bỏ tất cả</button>
+      <button class="btn btn-primary"   onclick="qlApply()"          style="font-size:11px;padding:5px 12px;background:var(--green)">▶ Áp dụng</button>
+      <button class="btn btn-secondary" onclick="qlReset()"          style="font-size:11px;padding:5px 12px" title="Đặt lại tích mặc định">↺ Đặt lại</button>
     </div>
   </div>
-  <div class="sec-title" style="background:#5C6BC0">⚙️ Danh sách Cán bộ — Tick để đưa vào đánh giá</div>
-  <div class="tbl-wrap"><table id="tbl-ql"></table></div>
+  <div class="sec-title" style="background:#5C6BC0">⚙️ Danh sách CB theo Phòng (157359 &amp; 157260 bỏ tích mặc định)</div>
+  <div class="tbl-wrap" style="max-height:620px;overflow-y:auto"><table id="tbl-ql"></table></div>
 </div>
 
 
@@ -594,15 +597,7 @@ const SEED = [{"ma": "157345", "ten": "Nguyễn Công Thành", "phong": "P. KHCN
 
 const EXCLUDE_CV = ['giao dịch viên', 'chuyên viên ngân hàng đa năng', 'phó giám đốc phòng giao dịch phụ trách tác nghiệp'];
 const EXCLUDE_MA = [];
-const CB_DEFAULT_OFF = ['157359']; // Mặc định bỏ tích
 
-function initCBActive(){
-  DATA.forEach(function(r){
-    if(!(r.ma in CB_ACTIVE)){
-      CB_ACTIVE[r.ma] = CB_DEFAULT_OFF.indexOf(r.ma) === -1;
-    }
-  });
-}
 
 function filterExclude(arr){
   return arr.filter(function(r){
@@ -622,9 +617,6 @@ const LD_CVS = ['Trưởng phòng Khách hàng cá nhân','Phó Trưởng phòng
 
 // live data
 let DATA = filterExclude(JSON.parse(JSON.stringify(SEED)));
-
-// CB được chọn để đánh giá — khai báo global trước mọi hàm
-var CB_ACTIVE = {}; // {ma: true/false}
 
 // benchmark mode per tab
 let benchTQ = 'phong', benchLD = 'phong', benchCB = 'phong', benchSS = 'phong';
@@ -651,8 +643,7 @@ function sum(arr,key){ return arr.reduce((a,r)=>a+(r[key]||0),0); }
 function getBench(mode, row) {
   const allLD = DATA.filter(isLD);
   const allCB = DATA.filter(r=>!isLD(r));
-  var _cbKeys = (typeof CB_ACTIVE==='object'&&CB_ACTIVE!==null) ? Object.keys(CB_ACTIVE) : [];
-  const all   = _cbKeys.length ? DATA.filter(function(r){ return CB_ACTIVE[r.ma]!==false; }) : DATA;
+  const all   = DATA;
   if (mode==='phong') {
     const sub = DATA.filter(r=>r.phong===row.phong);
     return { dn:avg(sub,'dn'), hdv:avg(sub,'hdv'), tnt:avg(sub,'tnt'), kv:sum(sub,'kv')/sub.length, dv:avg(sub,'dv'), nim:avg(sub,'nim'), nim_tt:avg(sub,'nim_tt'), label:'TB Phòng '+row.phong };
@@ -697,7 +688,7 @@ function gTab(id, el) {
     el.classList.add('active');
   }
   if (id==='bieu' && !bieuRendered) { renderBieu(); bieuRendered=true; }
-  if (id==='ql') { initCBActive(); renderQL(); }
+  if (id==='ql') { qlRender(); }
   currentTabId = id;
 }
 
@@ -1317,9 +1308,7 @@ function iBuildPreview() {
 
 function iApply() {
   if(!IMP.merged.length) return;
-  DATA=filterExclude(JSON.parse(JSON.stringify(IMP.merged)));
-  CB_ACTIVE={}; // reset khi có data mới
-  initCBActive(); // khởi tạo ngay
+  DATA=filterExclude(JSON.parse(JSON.stringify(IMP.merged))); ACTIVE_CB=null;
   bieuRendered=false;
 
   // Update header
@@ -1452,7 +1441,7 @@ async function loadDataFromGAS(){
     var d=await r.json();
     if(!d.data||!d.data.length) throw new Error('empty');
 
-    DATA=filterExclude(d.data);
+    DATA=filterExclude(d.data); ACTIVE_CB=null;
     if(d.date) IMP.date=d.date;
 
     // src-badge: chỉ set 1 lần, refreshDateDisplay sẽ xử lý
@@ -1470,7 +1459,6 @@ async function loadDataFromGAS(){
     setSaveStatus('✅ Tải từ GAS thành công'+(ts?' ('+ts+')':''),'var(--green)');
     // Re-render toàn bộ dashboard với data mới
     bieuRendered=false;
-    initCBActive(); // Đảm bảo CB_ACTIVE luôn được init với data mới
     renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
     refreshDateDisplay(); // Gọi CUỐI CÙNG, sau tất cả render
   } catch(e){
@@ -1479,13 +1467,6 @@ async function loadDataFromGAS(){
   }
 }
 
-// Khởi tạo CB_ACTIVE với SEED data
-initCBActive();
-
-// Force-init display state via style (immune to CSS bleed from @media print)
-document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
-var initPanel = document.getElementById('tab-tq');
-if(initPanel){ initPanel.style.display='block'; }
 </script>
 
 <!-- PDF BAR -->
@@ -1998,70 +1979,28 @@ async function syncGoogleSheets() {
   btn.disabled = false;
 }
 
-// Load saved URLs when page loads
-window.addEventListener('load', function(){
-  loadSavedGSUrls();
+
+
+
+// Wrap init in window.onload so all script blocks are parsed first
+window.addEventListener('load', function() {
+  loadDataFromGAS();
+  renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+  document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
+  document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
+  document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
+  document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
+  // Init display
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
+  var initPanel = document.getElementById('tab-tq');
+  if(initPanel){ initPanel.style.display='block'; }
   loadGHConfig();
-  // Pre-validate default URLs
+  loadSavedGSUrls();
+  qlLoadSaved();
   ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id,i){
     validateGSUrl(id,'gs-status-'+(i+1));
   });
 });
-
-</script>
-
-
-<div id="gas-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);z-index:9999;overflow-y:auto;padding:20px">
-  <div style="background:#fff;max-width:640px;margin:0 auto;border-radius:12px;overflow:hidden">
-    <div style="background:#1B5E54;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:14px;font-weight:700">&#9889; Cài Google Apps Script — Hết lỗi CORS</span>
-      <button onclick="document.getElementById('gas-modal').style.display='none'" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1">&#x2715;</button>
-    </div>
-    <div style="padding:18px;font-size:12px;line-height:1.8;color:#1A2B2A">
-      <div style="background:#E8F5E9;border-radius:7px;padding:10px 13px;margin-bottom:14px;font-size:11px">
-        <b style="color:#1B5E20">Tại sao cần GAS?</b> Trình duyệt chặn request từ GitHub Pages đến Google Sheets (CORS).
-        GAS chạy trên máy chầ Google nên không bị chặn. Cài 1 lần, dùng mãi, miễn phí.
-      </div>
-      <div style="display:grid;gap:12px">
-        <div>
-          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 1 — Mở Google Apps Script</div>
-          Vào <b>script.google.com</b> → Đ\u0103ng nhập bằng tài khoản Google có quyền đọc 3 Sheet
-          → Nhấn <b>"Dự án mới"</b>
-        </div>
-        <div>
-          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 2 — Dán code sau vào ô Code.gs</div>
-          <div style="background:#1A2B2A;color:#A8D8B0;border-radius:7px;padding:12px;font-family:monospace;font-size:10px;white-space:pre-wrap;overflow-x:auto">const SHEETS = {\n  qm: '1CQJ45zrm3HUH-rkR6RRQwO7WPZk2IphD8-3_-T4_-Jw',\n  kv: '1n1VGlO5626-sF4ziV7NIGGch6FvaQEfipT5JTosrueM',\n  cb: '1lJnc2fYyhXq9GLKsU5mF1HkAqoAgustLduYditJ1AmQ'\n};\n\nfunction doGet(e) {\n  var id = e.parameter.sheetId || '';\n  var valid = Object.values(SHEETS).indexOf(id) > -1;\n  if (!valid) return resp({error:'Sheet ID khong hop le'});\n  var data = SpreadsheetApp.openById(id).getSheets()[0].getDataRange().getValues();\n  var csv = data.map(function(row){\n    return row.map(function(c){\n      var s=String(c===null||c===undefined?'':c);\n      return /[,\"\n]/.test(s)?'\"'+s.replace(/\"/g,'\"\"')+'\"':s;\n    }).join(',');\n  }).join('\\n');\n  return resp({csv:csv, rows:data.length});\n}\n\nfunction resp(obj){\n  return ContentService\n    .createTextOutput(JSON.stringify(obj))\n    .setMimeType(ContentService.MimeType.JSON);\n}</div>
-        </div>
-        <div>
-          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 3 — Triển khai</div>
-          Nhấn <b>Triển khai</b> → <b>Triển khai mới</b> → Loại: <b>Ứng dụng web</b><br>
-          Người truy cập: <b>Bất kỳ ai</b> → <b>Triển khai</b> → Cấp quyền → Copy URL
-        </div>
-        <div>
-          <div style="font-weight:700;color:#1B5E54;margin-bottom:5px">Bước 4 — Dán URL vào ô GAS trong Dashboard</div>
-          Dán URL dạng <code style="background:#F5F5F5;padding:2px 6px;border-radius:4px">https://script.google.com/macros/s/.../exec</code><br>
-          vào ô ⚙ <b>Google Apps Script Web App URL</b> → Nhấn <b>🔄 \u0110ồng bộ</b>
-        </div>
-        <div style="background:#FFF8E1;border-radius:7px;padding:10px 13px;border-left:3px solid #F9A825;font-size:11px">
-          ⚠️ Khi deploy lần đầu Google yêu cầu cấp quyền — chọn <b>"Tiếp tục"</b> → <b>"Cho phập"</b>.
-          Sau khi sửa code, nhấn <b>Triển khai mới</b> (không dùng "Quản lý triển khai").
-          Nhấn <b>💾 Lưu URL</b> sau khi nhập GAS URL để không phải nhập lại.
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// Wrap init in window.onload so all script blocks are parsed first
-window.addEventListener('load', function() {
-  loadDataFromGAS();
-});
-renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
-document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
-document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
-document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
-document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
 
 // ============================================================
 // GITHUB AUTO-DEPLOY
@@ -2220,155 +2159,155 @@ function refreshDateDisplay(){
   if(pb) pb.textContent = DATA.length + ' Cán bộ' + (d ? ' | ' + d : '');
 }
 
-// ── TAB QUẢN LÝ CÁN BỘ ──────────────────────────────────────
-// Set default: tất cả CB đều được chọn (khai báo ở đầu file)
+// ════════════════════════════════════════════════════════════
+// TAB QUẢN LÝ CÁN BỘ
+// Hoàn toàn độc lập — không ảnh hưởng renderTQ/LD/CB/KV/SS
+// ════════════════════════════════════════════════════════════
+var ACTIVE_CB = null; // null = chưa init; {ma: bool}
 
-// DATA_ACTIVE: chỉ gồm CB đang được chọn
-function getActiveData(){
-  if(!CB_ACTIVE||!Object.keys(CB_ACTIVE).length) return DATA;
-  return DATA.filter(function(r){ return CB_ACTIVE[r.ma]!==false; });
+function qlInitIfNeeded(){
+  if(!ACTIVE_CB) ACTIVE_CB = {};
+  DATA.forEach(function(r){
+    if(!(r.ma in ACTIVE_CB)){
+      ACTIVE_CB[r.ma] = (r.ma !== '157359' && r.ma !== '157260');
+    }
+  });
 }
 
-function renderQL(){
-  initCBActive();
-  var actCount = DATA.filter(function(r){ return CB_ACTIVE[r.ma]!==false; }).length;
-  var ldTotal  = DATA.filter(isLD).length;
-  var cbTotal  = DATA.filter(function(r){ return !isLD(r); }).length;
-  var ldAct = DATA.filter(function(r){ return isLD(r)&&CB_ACTIVE[r.ma]!==false; }).length;
-  var cbAct = DATA.filter(function(r){ return !isLD(r)&&CB_ACTIVE[r.ma]!==false; }).length;
+function qlActiveData(){
+  qlInitIfNeeded();
+  return DATA.filter(function(r){ return ACTIVE_CB[r.ma]; });
+}
 
-  document.getElementById('kpi-ql').innerHTML=[
-    {l:'Tổng CB',       v:DATA.length,         s:'trong hệ thống', c:''},
-    {l:'Đang đánh giá', v:actCount,            s:'CB được chọn',   c:'green'},
-    {l:'Lãnh đạo',      v:ldAct+'/'+ldTotal,   s:'đang được chọn', c:''},
-    {l:'Cán bộ',        v:cbAct+'/'+cbTotal,   s:'đang được chọn', c:'gold'},
-    {l:'Bỏ qua',        v:DATA.length-actCount,s:'CB',             c:'orange'},
+function qlRender(){
+  qlInitIfNeeded();
+  var activeCount = DATA.filter(function(r){ return ACTIVE_CB[r.ma]; }).length;
+  var ldCount = DATA.filter(isLD).length;
+  var cbCount = DATA.filter(function(r){ return !isLD(r); }).length;
+  var ldOn = DATA.filter(function(r){ return isLD(r)&&ACTIVE_CB[r.ma]; }).length;
+  var cbOn = DATA.filter(function(r){ return !isLD(r)&&ACTIVE_CB[r.ma]; }).length;
+
+  document.getElementById('kpi-ql').innerHTML = [
+    {l:'Tổng CB',          v:DATA.length,          s:'trong hệ thống', c:''},
+    {l:'Đang được chọn',   v:activeCount,           s:'CB vào tính toán',c:'green'},
+    {l:'Lãnh đạo',         v:ldOn+'/'+ldCount,      s:'được chọn',      c:''},
+    {l:'Cán bộ CM',        v:cbOn+'/'+cbCount,      s:'được chọn',      c:'gold'},
+    {l:'Bỏ qua',           v:DATA.length-activeCount,s:'CB',            c:'orange'},
   ].map(function(k){
-    return '<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div><div class="kpi-val">'+k.v+'</div><div class="kpi-sub">'+k.s+'</div></div>';
+    return '<div class="kpi '+k.c+'">'
+      +'<div class="kpi-lbl">'+k.l+'</div>'
+      +'<div class="kpi-val">'+k.v+'</div>'
+      +'<div class="kpi-sub">'+k.s+'</div></div>';
   }).join('');
 
-  // ── Tách 2 nhóm: Lãnh đạo và Cán bộ ──
-  var h='<thead><tr>'
+  var h = '<thead><tr>'
     +'<th style="width:44px;text-align:center">✓</th>'
     +'<th>Mã CB</th>'
-    +'<th style="min-width:140px">Họ &amp; Tên</th>'
+    +'<th style="min-width:150px">Họ &amp; Tên</th>'
     +'<th>Phòng</th>'
     +'<th style="min-width:170px">Chức vụ</th>'
-    +'<th>Loại</th>'
-    +'<th>Dữ liệu</th>'
+    +'<th style="width:60px">Loại</th>'
+    +'<th style="width:60px">Dữ liệu</th>'
     +'</tr></thead><tbody>';
 
-  // Helper render row
-  function rowHTML(r, rowIdx){
-    var active  = CB_ACTIVE[r.ma]!==false;
-    var hasData = r.dn!=null||r.kv>0;
-    var rowBg   = active
-      ? (isLD(r) ? 'background:#EBF8F7' : (rowIdx%2?'background:var(--alt)':'background:#fff'))
-      : 'background:#FFEBEE';
-    return '<tr style="'+rowBg+'" id="row-ql-'+r.ma+'">'
-      +'<td style="text-align:center;vertical-align:middle;padding:6px 0">'
-      +'<input type="checkbox"'+(active?' checked':'')
-      +' onchange="toggleCB(\''+r.ma+'\',this.checked)"'
-      +' style="width:17px;height:17px;accent-color:var(--teal);cursor:pointer">'
-      +'</td>'
-      +'<td class="tc" style="font-size:11px;color:var(--gray)">'+r.ma+'</td>'
-      +'<td class="fw">'+r.ten+'</td>'
-      +'<td style="font-size:12px">'+r.phong+'</td>'
-      +'<td style="font-size:11px;color:var(--gray)">'+r.chucvu+'</td>'
-      +'<td class="tc"><span class="badge '+(isLD(r)?'b-ld':'b-cb')+'">'+(isLD(r)?'👑 LD':'👤 CB')+'</span></td>'
-      +'<td class="tc">'+(hasData
-        ?'<span style="color:var(--green);font-weight:700">✓</span>'
-        :'<span class="na">—</span>')+'</td>'
-      +'</tr>';
-  }
-
-  // ── NHÓM 1: LÃNH ĐẠO ──────────────────────────────
-  h+='<tr><td colspan="7" style="background:var(--ld);color:#fff;padding:8px 14px;font-size:12px;font-weight:700">'
-    +'👑 LÃNH ĐẠO (PTP / PGĐ Kinh doanh)'
-    +'&nbsp;&nbsp;<span style="font-weight:400;opacity:.8;font-size:11px">('
-    +ldAct+'/'+ldTotal+' được chọn)</span>'
-    +'<span style="margin-left:auto;float:right;display:flex;gap:6px">'
-    +'<button onclick="selectGroup(true,true)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Chọn tất cả</button>'
-    +'<button onclick="selectGroup(false,true)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Bỏ tất cả</button>'
-    +'</span>'
-    +'</td></tr>';
-
+  // Liệt kê theo Phòng — gộp tất cả LD + CB trong cùng 1 phòng
   PHONGS.forEach(function(p){
-    var rows = DATA.filter(function(r){ return r.phong===p && isLD(r); });
+    var rows = DATA.filter(function(r){ return r.phong===p; });
     if(!rows.length) return;
-    h+='<tr class="ph-row ld"><td colspan="7">📌 '+p+'</td></tr>';
-    rows.forEach(function(r,i){ h+=rowHTML(r,i); });
+
+    var onCount = rows.filter(function(r){ return ACTIVE_CB[r.ma]; }).length;
+    h += '<tr class="ph-row"><td colspan="7">📌 '+p
+       + ' <span style="font-weight:400;font-size:11px;opacity:.8">'
+       + '('+onCount+'/'+rows.length+' được chọn)</span></td></tr>';
+
+    rows.forEach(function(r, i){
+      var on = ACTIVE_CB[r.ma];
+      var ld = isLD(r);
+      var bg = on
+        ? (ld ? 'background:#EBF8F7' : (i%2===0?'background:#fff':'background:var(--alt)'))
+        : 'background:#FFEBEE';
+      var hasData = r.dn!=null || r.kv>0;
+      h += '<tr style="'+bg+'" id="qlr-'+r.ma+'">'
+        +'<td style="text-align:center">'
+        +'<input type="checkbox"'+(on?' checked':'')
+        +' data-ma="'+r.ma+'" onchange="qlTick(this)"'
+        +' style="width:16px;height:16px;accent-color:var(--teal);cursor:pointer">'
+        +'</td>'
+        +'<td class="tc" style="font-size:11px;color:var(--gray)">'+r.ma+'</td>'
+        +'<td class="fw">'+r.ten+'</td>'
+        +'<td style="font-size:11px">'+r.phong+'</td>'
+        +'<td style="font-size:11px;color:var(--gray)">'+r.chucvu+'</td>'
+        +'<td class="tc"><span class="badge '+(ld?'b-ld':'b-cb')+'">'+(ld?'👑':'👤')+'</span></td>'
+        +'<td class="tc">'+(hasData?'<span style="color:var(--green)">✓</span>':'<span class="na">—</span>')+'</td>'
+        +'</tr>';
+    });
   });
 
-  // ── NHÓM 2: CÁN BỘ CHUYÊN MÔN ────────────────────
-  h+='<tr><td colspan="7" style="background:var(--cb);color:#fff;padding:8px 14px;font-size:12px;font-weight:700">'
-    +'👤 CÁN BỘ CHUYÊN MÔN'
-    +'&nbsp;&nbsp;<span style="font-weight:400;opacity:.8;font-size:11px">('
-    +cbAct+'/'+cbTotal+' được chọn)</span>'
-    +'<span style="margin-left:auto;float:right;display:flex;gap:6px">'
-    +'<button onclick="selectGroup(true,false)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Chọn tất cả</button>'
-    +'<button onclick="selectGroup(false,false)" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer">Bỏ tất cả</button>'
-    +'</span>'
-    +'</td></tr>';
-
-  PHONGS.forEach(function(p){
-    var rows = DATA.filter(function(r){ return r.phong===p && !isLD(r); });
-    if(!rows.length) return;
-    h+='<tr class="ph-row cb"><td colspan="7">📌 '+p+'</td></tr>';
-    rows.forEach(function(r,i){ h+=rowHTML(r,i); });
-  });
-
-  h+='</tbody>';
-  document.getElementById('tbl-ql').innerHTML=h;
+  h += '</tbody>';
+  document.getElementById('tbl-ql').innerHTML = h;
 }
 
-function toggleCB(ma, checked){
-  CB_ACTIVE[ma] = checked;
-  var row = document.getElementById('row-ql-'+ma);
-  if(row){
-    var r = DATA.find(function(x){return x.ma===ma;});
-    if(checked){
-      row.style.background = r&&isLD(r)?'#EBF8F7':'';
-    } else {
-      row.style.background = '#FFEBEE';
-    }
+// Tick 1 CB — chỉ cập nhật ACTIVE_CB + màu row, KHÔNG đụng tab khác
+function qlTick(el){
+  var ma = el.dataset.ma;
+  ACTIVE_CB[ma] = el.checked;
+  var row = document.getElementById('qlr-'+ma);
+  if(row) row.style.background = el.checked ? '' : '#FFEBEE';
+  // Cập nhật KPI count real-time
+  var active = DATA.filter(function(r){ return ACTIVE_CB[r.ma]; }).length;
+  var cards = document.querySelectorAll('#kpi-ql .kpi-val');
+  if(cards[1]) cards[1].textContent = active;
+  if(cards[4]) cards[4].textContent = DATA.length - active;
+}
+
+// Chọn / bỏ tất cả
+function qlSelectAll(val){
+  qlInitIfNeeded();
+  DATA.forEach(function(r){ ACTIVE_CB[r.ma] = val; });
+  qlRender();
+}
+
+// ▶ ÁP DỤNG: lưu ACTIVE_CB, cập nhật getBench để tính TB đúng
+// KHÔNG re-render tabs chính — tránh mọi side-effect
+function qlApply(){
+  qlInitIfNeeded();
+  var active = DATA.filter(function(r){ return ACTIVE_CB[r.ma]; });
+  // Lưu vào localStorage để persist
+  try{ localStorage.setItem('bidv_active_cb', JSON.stringify(
+    DATA.map(function(r){ return {ma:r.ma, on:!!ACTIVE_CB[r.ma]}; })
+  )); }catch(e){}
+  qlRender();
+  var st = document.getElementById('gs-sync-status');
+  if(st){
+    st.textContent = '✅ Đã lưu lựa chọn: '+active.length+'/'+DATA.length+' CB vào tính toán';
+    st.style.color = 'var(--green)';
+    setTimeout(function(){ st.textContent=''; }, 5000);
   }
-  // Cập nhật KPI realtime
-  var actCount = DATA.filter(function(r){ return CB_ACTIVE[r.ma]!==false; }).length;
-  var kv = document.getElementById('kpi-ql');
-  if(kv){
-    var cards = kv.querySelectorAll('.kpi-val');
-    if(cards[1]) cards[1].textContent = actCount;
-    if(cards[4]) cards[4].textContent = DATA.length - actCount;
-  }
 }
 
-function selectAllCB(val){
-  DATA.forEach(function(r){ CB_ACTIVE[r.ma]=val; });
-  renderQL();
+// ↺ Đặt lại về mặc định
+function qlReset(){
+  ACTIVE_CB = null;
+  qlInitIfNeeded();
+  try{ localStorage.removeItem('bidv_active_cb'); }catch(e){}
+  qlRender();
 }
 
-function selectGroup(val, ldGroup){
-  DATA.forEach(function(r){
-    if(ldGroup ? isLD(r) : !isLD(r)) CB_ACTIVE[r.ma]=val;
-  });
-  renderQL();
-}
-
-function applyQLSelection(){
-  // Re-render tất cả các tab với getActiveData() thay DATA
-  var activeCount = DATA.filter(function(r){ return CB_ACTIVE[r.ma]!==false; }).length;
-  renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
-  bieuRendered=false;
-  refreshDateDisplay();
-  alert('✅ Đã áp dụng! Đang đánh giá '+activeCount+'/'+DATA.length+' cán bộ.');
-  // Switch to TQ tab
-  gTab('tq', document.querySelectorAll('.tab')[0]);
+// Load lựa chọn đã lưu
+function qlLoadSaved(){
+  try{
+    var saved = localStorage.getItem('bidv_active_cb');
+    if(!saved) return;
+    var arr = JSON.parse(saved);
+    qlInitIfNeeded();
+    arr.forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
+  }catch(e){}
 }
 
 function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
 // Close modal on backdrop click
-document.getElementById('gas-modal').addEventListener('click', function(e){
+var _gasModal = document.getElementById('gas-modal');
+if(_gasModal) _gasModal.addEventListener('click', function(e){
   if(e.target===this) this.style.display='none';
 });
 // Save/load GAS URL with other URLs
