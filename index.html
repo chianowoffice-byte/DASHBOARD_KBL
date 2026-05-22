@@ -687,8 +687,14 @@ function gTab(id, el) {
     document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
     el.classList.add('active');
   }
-  if (id==='bieu' && !bieuRendered) { renderBieu(); bieuRendered=true; }
-  if (id==='ql') { qlRender(); }
+  // Re-render mỗi khi switch tab — đảm bảo luôn fresh, tránh stale content
+  if (id==='tq')   { renderTQ(); }
+  if (id==='ld')   { renderLD(); }
+  if (id==='cb')   { renderCB(); }
+  if (id==='kv')   { renderKV(); }
+  if (id==='ss')   { renderSS(); }
+  if (id==='bieu') { if(!bieuRendered){ renderBieu(); bieuRendered=true; } }
+  if (id==='ql')   { qlRender(); }
   currentTabId = id;
 }
 
@@ -2160,12 +2166,13 @@ function refreshDateDisplay(){
 }
 
 // ════════════════════════════════════════════════════════════
-// TAB QUẢN LÝ CÁN BỘ
-// Hoàn toàn độc lập — không ảnh hưởng renderTQ/LD/CB/KV/SS
+// TAB QUẢN LÝ CÁN BỘ — Phiên bản tối giản, không side-effect
+// ACTIVE_CB chỉ lưu trạng thái tick/bỏ tích
+// Hoàn toàn độc lập với renderTQ/LD/CB/KV/SS
 // ════════════════════════════════════════════════════════════
-var ACTIVE_CB = null; // null = chưa init; {ma: bool}
+var ACTIVE_CB = null;
 
-function qlInitIfNeeded(){
+function qlInit(){
   if(!ACTIVE_CB) ACTIVE_CB = {};
   DATA.forEach(function(r){
     if(!(r.ma in ACTIVE_CB)){
@@ -2174,133 +2181,110 @@ function qlInitIfNeeded(){
   });
 }
 
-function qlActiveData(){
-  qlInitIfNeeded();
-  return DATA.filter(function(r){ return ACTIVE_CB[r.ma]; });
-}
-
 function qlRender(){
-  qlInitIfNeeded();
-  var activeCount = DATA.filter(function(r){ return ACTIVE_CB[r.ma]; }).length;
-  var ldCount = DATA.filter(isLD).length;
-  var cbCount = DATA.filter(function(r){ return !isLD(r); }).length;
-  var ldOn = DATA.filter(function(r){ return isLD(r)&&ACTIVE_CB[r.ma]; }).length;
-  var cbOn = DATA.filter(function(r){ return !isLD(r)&&ACTIVE_CB[r.ma]; }).length;
+  qlInit();
+  var total   = DATA.length;
+  var active  = DATA.filter(function(r){ return !!ACTIVE_CB[r.ma]; }).length;
+  var ldAll   = DATA.filter(isLD).length;
+  var cbAll   = DATA.filter(function(r){ return !isLD(r); }).length;
+  var ldOn    = DATA.filter(function(r){ return isLD(r)  && !!ACTIVE_CB[r.ma]; }).length;
+  var cbOn    = DATA.filter(function(r){ return !isLD(r) && !!ACTIVE_CB[r.ma]; }).length;
 
-  document.getElementById('kpi-ql').innerHTML = [
-    {l:'Tổng CB',          v:DATA.length,          s:'trong hệ thống', c:''},
-    {l:'Đang được chọn',   v:activeCount,           s:'CB vào tính toán',c:'green'},
-    {l:'Lãnh đạo',         v:ldOn+'/'+ldCount,      s:'được chọn',      c:''},
-    {l:'Cán bộ CM',        v:cbOn+'/'+cbCount,      s:'được chọn',      c:'gold'},
-    {l:'Bỏ qua',           v:DATA.length-activeCount,s:'CB',            c:'orange'},
-  ].map(function(k){
-    return '<div class="kpi '+k.c+'">'
-      +'<div class="kpi-lbl">'+k.l+'</div>'
-      +'<div class="kpi-val">'+k.v+'</div>'
-      +'<div class="kpi-sub">'+k.s+'</div></div>';
-  }).join('');
+  // KPI
+  document.getElementById('kpi-ql').innerHTML =
+    [{l:'Tổng hệ thống', v:total,             s:'cán bộ',          c:''},
+     {l:'Đang chọn',     v:active,            s:'được tính',       c:'green'},
+     {l:'Lãnh đạo',      v:ldOn+'/'+ldAll,    s:'được chọn',       c:''},
+     {l:'Cán bộ CM',     v:cbOn+'/'+cbAll,    s:'được chọn',       c:'gold'},
+     {l:'Bỏ qua',        v:total-active,      s:'CB',              c:'orange'},
+    ].map(function(k){
+      return '<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div>'
+            +'<div class="kpi-val">'+k.v+'</div>'
+            +'<div class="kpi-sub">'+k.s+'</div></div>';
+    }).join('');
 
+  // Table — 1 bảng duy nhất theo Phòng, gộp LD+CB
   var h = '<thead><tr>'
     +'<th style="width:44px;text-align:center">✓</th>'
-    +'<th>Mã CB</th>'
-    +'<th style="min-width:150px">Họ &amp; Tên</th>'
-    +'<th>Phòng</th>'
-    +'<th style="min-width:170px">Chức vụ</th>'
-    +'<th style="width:60px">Loại</th>'
-    +'<th style="width:60px">Dữ liệu</th>'
+    +'<th>Mã CB</th><th style="min-width:150px">Họ &amp; Tên</th>'
+    +'<th>Phòng</th><th style="min-width:170px">Chức vụ</th>'
+    +'<th>Loại</th><th>Dữ liệu</th>'
     +'</tr></thead><tbody>';
 
-  // Liệt kê theo Phòng — gộp tất cả LD + CB trong cùng 1 phòng
   PHONGS.forEach(function(p){
-    var rows = DATA.filter(function(r){ return r.phong===p; });
+    var rows = DATA.filter(function(r){ return r.phong === p; });
     if(!rows.length) return;
-
-    var onCount = rows.filter(function(r){ return ACTIVE_CB[r.ma]; }).length;
+    var onCnt = rows.filter(function(r){ return !!ACTIVE_CB[r.ma]; }).length;
     h += '<tr class="ph-row"><td colspan="7">📌 '+p
-       + ' <span style="font-weight:400;font-size:11px;opacity:.8">'
-       + '('+onCount+'/'+rows.length+' được chọn)</span></td></tr>';
-
-    rows.forEach(function(r, i){
-      var on = ACTIVE_CB[r.ma];
-      var ld = isLD(r);
-      var bg = on
-        ? (ld ? 'background:#EBF8F7' : (i%2===0?'background:#fff':'background:var(--alt)'))
-        : 'background:#FFEBEE';
-      var hasData = r.dn!=null || r.kv>0;
+       + ' <span style="font-weight:400;font-size:11px;opacity:.75">'
+       + '('+onCnt+'/'+rows.length+')</span></td></tr>';
+    rows.forEach(function(r, idx){
+      var on  = !!ACTIVE_CB[r.ma];
+      var ld  = isLD(r);
+      var bg  = on ? (ld ? 'background:#EBF8F7' : (idx%2===0 ? 'background:#fff' : 'background:var(--alt)'))
+                   : 'background:#FFEBEE';
+      var dat = r.dn != null || r.kv > 0;
       h += '<tr style="'+bg+'" id="qlr-'+r.ma+'">'
         +'<td style="text-align:center">'
         +'<input type="checkbox"'+(on?' checked':'')
         +' data-ma="'+r.ma+'" onchange="qlTick(this)"'
-        +' style="width:16px;height:16px;accent-color:var(--teal);cursor:pointer">'
-        +'</td>'
+        +' style="width:16px;height:16px;accent-color:var(--teal);cursor:pointer"></td>'
         +'<td class="tc" style="font-size:11px;color:var(--gray)">'+r.ma+'</td>'
         +'<td class="fw">'+r.ten+'</td>'
         +'<td style="font-size:11px">'+r.phong+'</td>'
         +'<td style="font-size:11px;color:var(--gray)">'+r.chucvu+'</td>'
         +'<td class="tc"><span class="badge '+(ld?'b-ld':'b-cb')+'">'+(ld?'👑':'👤')+'</span></td>'
-        +'<td class="tc">'+(hasData?'<span style="color:var(--green)">✓</span>':'<span class="na">—</span>')+'</td>'
+        +'<td class="tc">'+(dat?'<span style="color:var(--green)">✓</span>':'<span class="na">—</span>')+'</td>'
         +'</tr>';
     });
   });
-
   h += '</tbody>';
   document.getElementById('tbl-ql').innerHTML = h;
 }
 
-// Tick 1 CB — chỉ cập nhật ACTIVE_CB + màu row, KHÔNG đụng tab khác
 function qlTick(el){
-  var ma = el.dataset.ma;
-  ACTIVE_CB[ma] = el.checked;
-  var row = document.getElementById('qlr-'+ma);
+  ACTIVE_CB[el.dataset.ma] = el.checked;
+  var row = document.getElementById('qlr-'+el.dataset.ma);
   if(row) row.style.background = el.checked ? '' : '#FFEBEE';
-  // Cập nhật KPI count real-time
-  var active = DATA.filter(function(r){ return ACTIVE_CB[r.ma]; }).length;
-  var cards = document.querySelectorAll('#kpi-ql .kpi-val');
+  var active = DATA.filter(function(r){ return !!ACTIVE_CB[r.ma]; }).length;
+  var cards  = document.querySelectorAll('#kpi-ql .kpi-val');
   if(cards[1]) cards[1].textContent = active;
   if(cards[4]) cards[4].textContent = DATA.length - active;
 }
 
-// Chọn / bỏ tất cả
 function qlSelectAll(val){
-  qlInitIfNeeded();
+  qlInit();
   DATA.forEach(function(r){ ACTIVE_CB[r.ma] = val; });
   qlRender();
 }
 
-// ▶ ÁP DỤNG: lưu ACTIVE_CB, cập nhật getBench để tính TB đúng
-// KHÔNG re-render tabs chính — tránh mọi side-effect
 function qlApply(){
-  qlInitIfNeeded();
-  var active = DATA.filter(function(r){ return ACTIVE_CB[r.ma]; });
-  // Lưu vào localStorage để persist
-  try{ localStorage.setItem('bidv_active_cb', JSON.stringify(
-    DATA.map(function(r){ return {ma:r.ma, on:!!ACTIVE_CB[r.ma]}; })
-  )); }catch(e){}
-  qlRender();
+  qlInit();
+  var active = DATA.filter(function(r){ return !!ACTIVE_CB[r.ma]; }).length;
+  try{ localStorage.setItem('bidv_active_cb',
+    JSON.stringify(DATA.map(function(r){ return {ma:r.ma,on:!!ACTIVE_CB[r.ma]}; })));
+  }catch(e){}
   var st = document.getElementById('gs-sync-status');
   if(st){
-    st.textContent = '✅ Đã lưu lựa chọn: '+active.length+'/'+DATA.length+' CB vào tính toán';
+    st.textContent = '✅ Đã lưu: '+active+'/'+DATA.length+' CB được chọn';
     st.style.color = 'var(--green)';
     setTimeout(function(){ st.textContent=''; }, 5000);
   }
 }
 
-// ↺ Đặt lại về mặc định
 function qlReset(){
   ACTIVE_CB = null;
-  qlInitIfNeeded();
+  qlInit();
   try{ localStorage.removeItem('bidv_active_cb'); }catch(e){}
   qlRender();
 }
 
-// Load lựa chọn đã lưu
 function qlLoadSaved(){
   try{
-    var saved = localStorage.getItem('bidv_active_cb');
-    if(!saved) return;
-    var arr = JSON.parse(saved);
-    qlInitIfNeeded();
-    arr.forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
+    var s = localStorage.getItem('bidv_active_cb');
+    if(!s) return;
+    qlInit();
+    JSON.parse(s).forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
   }catch(e){}
 }
 
