@@ -1466,7 +1466,14 @@ async function loadDataFromGAS(){
     // Re-render toàn bộ dashboard với data mới
     bieuRendered=false;
     renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
-    refreshDateDisplay(); // Gọi CUỐI CÙNG, sau tất cả render
+    refreshDateDisplay();
+    // Đảm bảo tab TQ vẫn active sau khi async load xong
+    // (chỉ nếu user chưa navigate sang tab khác)
+    if(currentTabId === 'tq' || !currentTabId) {
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
+      var p = document.getElementById('tab-tq');
+      if(p) p.style.display='block';
+    }
   } catch(e){
     if(badge) badge.textContent=IMP.date?'📅 Kỳ '+IMP.date:'📅 Dữ liệu gốc';
     if(e.message!=='empty') console.warn('loadDataFromGAS:',e.message);
@@ -1990,22 +1997,28 @@ async function syncGoogleSheets() {
 
 // Wrap init in window.onload so all script blocks are parsed first
 window.addEventListener('load', function() {
-  loadDataFromGAS();
+  // 1. Init display trước — chỉ show tab TQ
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
+  var initPanel = document.getElementById('tab-tq');
+  if(initPanel){ initPanel.style.display='block'; }
+
+  // 2. Render với SEED data ngay
   renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
   document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
-  // Init display
-  document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
-  var initPanel = document.getElementById('tab-tq');
-  if(initPanel){ initPanel.style.display='block'; }
+
+  // 3. Load config
   loadGHConfig();
   loadSavedGSUrls();
   qlLoadSaved();
   ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id,i){
     validateGSUrl(id,'gs-status-'+(i+1));
   });
+
+  // 4. Load GAS async — khi xong sẽ re-render, KHÔNG ảnh hưởng display state
+  loadDataFromGAS();
 });
 
 // ============================================================
