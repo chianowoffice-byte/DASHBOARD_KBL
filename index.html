@@ -592,7 +592,7 @@ canvas{max-height:260px}
 // ══════════════════════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════════════════════
-const SEED = [{"ma":"157271","ten":"Trần Thị Hằng","phong":"P. KHCN","chucvu":"Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":2.6,"hdv":81.8,"tnt":1.24,"dv":76,"nim":3.24,"nim_td":1.76,"nim_tt":-4.51,"kv":14},{"ma":"157345","ten":"Nguyễn Công Thành","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":679.3,"hdv":660.4,"tnt":7.06,"dv":139,"nim":1.76,"nim_td":0.95,"nim_tt":0.97,"kv":100},{"ma":"157332","ten":"Nguyễn Thị Phương","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":369.5,"hdv":168.9,"tnt":2.9,"dv":86,"nim":2.75,"nim_td":1.52,"nim_tt":1.53,"kv":289},{"ma":"151417","ten":"Nguyễn Thị Thanh Nga","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":708.3,"hdv":446.6,"tnt":5.73,"dv":193,"nim":2.54,"nim_td":1.15,"nim_tt":1.17,"kv":204},{"ma":"157359","ten":"Nguyễn Việt Anh","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":null,"hdv":null,"tnt":null,"dv":null,"nim":null,"nim_td":null,"nim_tt":null,"kv":0},{"ma":"173264","ten":"Lê Thùy Linh","phong":"P. KHCN","chucvu":"Chuyên viên Khách hàng cá nhân cấp 2","loai":"Cán bộ","dn":190.8,"hdv":92.3,"tnt":1.74,"dv":86,"nim":3.8,"nim_td":1.2,"nim_tt":1.28,"kv":241},{"ma":"165874","ten":"Ninh Thu Hương","phong":"P. KHCN","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":307.2,"hdv":291.5,"tnt":2.82,"dv":172,"nim":1,"nim_td":1.15,"nim_tt":1.21,"kv":172},{"ma":"157253","ten":"Cao Thanh Thủy","phong":"PGD Lương Định Của","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":0,"hdv":52.4,"tnt":1.05,"dv":123,"nim":2.05,"nim_td":2.55,"nim_tt":2.55,"kv":18},{"ma":"36691","ten":"Phạm Thị Tuyết Mai","phong":"PGD Lương Định Của","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":653.4,"hdv":729.4,"tnt":5.53,"dv":168,"nim":1.79,"nim_td":1.28,"nim_tt":1.28,"kv":203},{"ma":"178446","ten":"Phan Đức Trung","phong":"PGD Lương Định Của","chucvu":"Chuyên viên Khách hàng cá nhân cấp 2","loai":"Cán bộ","dn":64.6,"hdv":169.8,"tnt":1.13,"dv":39,"nim":1.3,"nim_td":1.28,"nim_tt":1.29,"kv":95},{"ma":"157252","ten":"Vũ Hoài Phương","phong":"PGD Lương Định Của","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":410.3,"hdv":326,"tnt":3.29,"dv":72,"nim":2.49,"nim_td":1.23,"nim_tt":1.23,"kv":151},{"ma":"157257","ten":"Vũ Thị Ngọc Ánh","phong":"PGD Nam Cao","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":0,"hdv":0,"tnt":0,"dv":0,"nim":3.85,"nim_td":3.8,"nim_tt":3.8,"kv":1},{"ma":"153545","ten":"Nguyễn Thị Ngọc Diệp","phong":"PGD Nam Cao","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":539.3,"hdv":634,"tnt":6.37,"dv":102,"nim":1.19,"nim_td":-4.21,"nim_tt":-1.53,"kv":207},{"ma":"158495","ten":"Nguyễn Trung Hiếu","phong":"PGD Nam Cao","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":431.8,"hdv":336,"tnt":3.84,"dv":311,"nim":3.66,"nim_td":1.13,"nim_tt":1.14,"kv":222},{"ma":"150432","ten":"Tống Xuân Trường","phong":"PGD Hào Nam","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":5.1,"hdv":258,"tnt":2.97,"dv":394,"nim":2.09,"nim_td":1.55,"nim_tt":1.62,"kv":34},{"ma":"149031","ten":"Trần Văn Long","phong":"PGD Hào Nam","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":472.7,"hdv":543.1,"tnt":5.3,"dv":63,"nim":2.55,"nim_td":1.4,"nim_tt":1.4,"kv":143},{"ma":"145318","ten":"Tạ Thị Vân","phong":"PGD Hào Nam","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 4","loai":"Cán bộ","dn":458.7,"hdv":370.3,"tnt":5.28,"dv":220,"nim":1.51,"nim_td":1.37,"nim_tt":1.41,"kv":326},{"ma":"180168","ten":"Bùi Mạnh Thắng","phong":"PGD Hào Nam","chucvu":"Chuyên viên Khách hàng cá nhân cấp 1","loai":"Cán bộ","dn":0,"hdv":0,"tnt":2.27,"dv":126,"nim":2.81,"nim_td":1.41,"nim_tt":1.43,"kv":113},{"ma":"28268","ten":"Nguyễn Thị Thái Hà","phong":"PGD West Lake","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":3.8,"hdv":441.5,"tnt":3.87,"dv":101,"nim":2.36,"nim_td":1.69,"nim_tt":1.69,"kv":4},{"ma":"145344","ten":"Bùi Phương Anh","phong":"PGD West Lake","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":683.6,"hdv":759.4,"tnt":8.73,"dv":154,"nim":2.24,"nim_td":1.23,"nim_tt":1.25,"kv":187},{"ma":"164065","ten":"Dương Thanh Tùng","phong":"PGD West Lake","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":221.7,"hdv":199,"tnt":2.83,"dv":94,"nim":3.65,"nim_td":1.67,"nim_tt":1.68,"kv":122},{"ma":"182410","ten":"Nguyễn Văn Thắng","phong":"PGD West Lake","chucvu":"Chuyên viên khách hàng hỗn hợp cấp 1","loai":"Cán bộ","dn":116.1,"hdv":129.7,"tnt":1.69,"dv":81,"nim":1.16,"nim_td":1.44,"nim_tt":1.46,"kv":113},{"ma":"157260","ten":"Phạm Thị Thúy Hằng","phong":"P. GD KH","chucvu":"Trưởng phòng Giao dịch Khách hàng","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":1,"hdv":41.6,"tnt":0.53,"dv":82,"nim":3.33,"nim_td":3.5,"nim_tt":3.6,"kv":4}];
+const SEED = [{"ma": "157345", "ten": "Nguyễn Công Thành", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 677.7, "hdv": 659.4, "tnt": 6.69, "dv": 137.0, "nim": 1.75, "nim_td": 0.93, "kv": 102, "nim_tt": 0.95}, {"ma": "157332", "ten": "Nguyễn Thị Phương", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 370.0, "hdv": 159.6, "tnt": 2.75, "dv": 86.0, "nim": 2.75, "nim_td": 1.52, "kv": 297, "nim_tt": 1.53}, {"ma": "151417", "ten": "Nguyễn Thị Thanh Nga", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 708.9, "hdv": 445.0, "tnt": 5.45, "dv": 187.0, "nim": 2.53, "nim_td": 1.14, "kv": 209, "nim_tt": 1.16}, {"ma": "157271", "ten": "Trần Thị Hằng", "phong": "P. KHCN", "chucvu": "Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.1, "hdv": 85.0, "tnt": 1.2, "dv": 75.0, "nim": 3.24, "nim_td": 1.73, "nim_tt": -4.61, "kv": 15}, {"ma": "157359", "ten": "Nguyễn Việt Anh", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": null, "hdv": null, "tnt": null, "dv": null, "nim": null, "nim_td": null, "nim_tt": null, "kv": 0}, {"ma": "173264", "ten": "Lê Thùy Linh", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 191.8, "hdv": 90.1, "tnt": 1.65, "dv": 84.0, "nim": 2.91, "nim_td": 1.2, "kv": 249, "nim_tt": 1.26}, {"ma": "165874", "ten": "Ninh Thu Hương", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 302.1, "hdv": 291.7, "tnt": 2.69, "dv": 168.0, "nim": 1.0, "nim_td": 1.14, "kv": 181, "nim_tt": 1.2}, {"ma": "36691", "ten": "Phạm Thị Tuyết Mai", "phong": "PGD Lương Định Của", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 656.3, "hdv": 725.0, "tnt": 5.25, "dv": 163.0, "nim": 1.78, "nim_td": 1.26, "kv": 214, "nim_tt": 1.27}, {"ma": "157253", "ten": "Cao Thanh Thủy", "phong": "PGD Lương Định Của", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 54.3, "tnt": 1.02, "dv": 117.0, "nim": 2.04, "nim_td": 2.55, "nim_tt": 2.55, "kv": 21}, {"ma": "178446", "ten": "Phan Đức Trung", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 65.9, "hdv": 140.9, "tnt": 1.04, "dv": 9.0, "nim": 1.3, "nim_td": 1.28, "kv": 94, "nim_tt": 1.29}, {"ma": "157252", "ten": "Vũ Hoài Phương", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 404.7, "hdv": 318.2, "tnt": 3.12, "dv": 70.0, "nim": 1.18, "nim_td": 1.22, "kv": 343, "nim_tt": 1.22}, {"ma": "153545", "ten": "Nguyễn Thị Ngọc Diệp", "phong": "PGD Nam Cao", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 537.5, "hdv": 640.4, "tnt": 6.08, "dv": 99.0, "nim": 1.19, "nim_td": -1.57, "kv": 210, "nim_tt": -1.54}, {"ma": "157257", "ten": "Vũ Thị Ngọc Ánh", "phong": "PGD Nam Cao", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 0.0, "tnt": 0.0, "dv": 0.0, "nim": 3.85, "nim_td": 3.8, "nim_tt": 3.8, "kv": 1}, {"ma": "158495", "ten": "Nguyễn Trung Hiếu", "phong": "PGD Nam Cao", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 448.7, "hdv": 350.1, "tnt": 3.66, "dv": 297.0, "nim": 2.36, "nim_td": 1.13, "kv": 348, "nim_tt": 1.13}, {"ma": "149031", "ten": "Trần Văn Long", "phong": "PGD Hào Nam", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 473.3, "hdv": 552.0, "tnt": 5.04, "dv": 63.0, "nim": 2.55, "nim_td": 1.38, "kv": 145, "nim_tt": 1.38}, {"ma": "150432", "ten": "Tống Xuân Trường", "phong": "PGD Hào Nam", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 5.1, "hdv": 265.3, "tnt": 2.88, "dv": 387.0, "nim": 2.1, "nim_td": 1.49, "nim_tt": 1.55, "kv": 34}, {"ma": "145318", "ten": "Tạ Thị Vân", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 4", "loai": "Cán bộ", "dn": 465.1, "hdv": 379.4, "tnt": 5.15, "dv": 217.0, "nim": 1.7, "nim_td": 1.36, "kv": 337, "nim_tt": 1.39}, {"ma": "180168", "ten": "Bùi Mạnh Thắng", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 1", "loai": "Cán bộ", "dn": 279.1, "hdv": 120.9, "tnt": 2.53, "dv": 143.0, "nim": 2.82, "nim_td": 1.41, "kv": 120, "nim_tt": 1.43}, {"ma": "145344", "ten": "Bùi Phương Anh", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 687.2, "hdv": 771.2, "tnt": 8.31, "dv": 146.0, "nim": 2.24, "nim_td": 1.21, "kv": 189, "nim_tt": 1.23}, {"ma": "164065", "ten": "Dương Thanh Tùng", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 214.6, "hdv": 200.8, "tnt": 2.73, "dv": 92.0, "nim": 2.81, "nim_td": 1.67, "kv": 125, "nim_tt": 1.68}, {"ma": "28268", "ten": "Nguyễn Thị Thái Hà", "phong": "PGD West Lake", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 3.8, "hdv": 458.7, "tnt": 3.69, "dv": 99.0, "nim": 2.25, "nim_td": 1.68, "nim_tt": 1.68, "kv": 23}, {"ma": "182410", "ten": "Nguyễn Văn Thắng", "phong": "PGD West Lake", "chucvu": "Chuyên viên khách hàng hỗn hợp cấp 1", "loai": "Cán bộ", "dn": 115.5, "hdv": 134.7, "tnt": 1.63, "dv": 77.0, "nim": 0.58, "nim_td": 1.43, "kv": 113, "nim_tt": 1.44}, {"ma": "157260", "ten": "Phạm Thị Thúy Hằng", "phong": "P. GD KH", "chucvu": "Trưởng phòng Giao dịch Khách hàng", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.0, "hdv": 43.1, "tnt": 0.51, "dv": 82.0, "nim": 3.33, "nim_td": 3.54, "nim_tt": 3.55, "kv": 4}];
 
 
 const EXCLUDE_CV = ['giao dịch viên', 'chuyên viên ngân hàng đa năng', 'phó giám đốc phòng giao dịch phụ trách tác nghiệp'];
@@ -641,11 +641,12 @@ function sum(arr,key){ return arr.reduce((a,r)=>a+(r[key]||0),0); }
 
 // ── BENCHMARK CALCULATOR ──────────────────────────────────────
 function getBench(mode, row) {
-  const allLD = DATA.filter(isLD);
-  const allCB = DATA.filter(r=>!isLD(r));
-  const all   = DATA;
+  var _G=getActive();
+  const allLD = _G.filter(isLD);
+  const allCB = _G.filter(r=>!isLD(r));
+  const all   = _G;
   if (mode==='phong') {
-    const sub = DATA.filter(r=>r.phong===row.phong);
+    const sub = _G.filter(r=>r.phong===row.phong);
     return { dn:avg(sub,'dn'), hdv:avg(sub,'hdv'), tnt:avg(sub,'tnt'), kv:sum(sub,'kv')/sub.length, dv:avg(sub,'dv'), nim:avg(sub,'nim'), nim_tt:avg(sub,'nim_tt'), label:'TB Phòng '+row.phong };
   }
   if (mode==='kbl') return { dn:avg(all,'dn'), hdv:avg(all,'hdv'), tnt:avg(all,'tnt'), kv:sum(all,'kv')/all.length, dv:avg(all,'dv'), nim:avg(all,'nim'), nim_tt:avg(all,'nim_tt'), label:'TB Toàn KBL' };
@@ -700,7 +701,7 @@ function gTab(id, el) {
 
 // ── TAB: TỔNG QUAN ────────────────────────────────────────────
 function renderTQ() {
-  const all=DATA, totDN=sum(all,'dn'), totHDV=sum(all,'hdv'), totKV=sum(all,'kv'), totTNT=sum(all,'tnt'), totDV=sum(all,'dv');
+  const all=getActive(), totDN=sum(all,'dn'), totHDV=sum(all,'hdv'), totKV=sum(all,'kv'), totTNT=sum(all,'tnt'), totDV=sum(all,'dv');
   document.getElementById('kpi-tq').innerHTML=[
     {l:'Tổng CB',v:all.length,s:'cán bộ',c:''},
     {l:'Lãnh đạo',v:all.filter(isLD).length,s:'TP/PTP/GĐ/PGĐ',c:''},
@@ -718,14 +719,14 @@ function renderTQ() {
   mkChart('c-dn-hdv','bar',{
     labels:PHONGS,
     datasets:[
-      {label:'Dư nợ (tỷ)',data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p),'dn').toFixed(0)),backgroundColor:'rgba(0,115,107,.8)'},
-      {label:'HĐV (tỷ)', data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p),'hdv').toFixed(0)),backgroundColor:'rgba(200,169,81,.8)'}
+      {label:'Dư nợ (tỷ)',data:PHONGS.map(p=>sum(getActive().filter(r=>r.phong===p),'dn').toFixed(0)),backgroundColor:'rgba(0,115,107,.8)'},
+      {label:'HĐV (tỷ)', data:PHONGS.map(p=>sum(getActive().filter(r=>r.phong===p),'hdv').toFixed(0)),backgroundColor:'rgba(200,169,81,.8)'}
     ]
   },{plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}});
 
   mkChart('c-kv-phong','bar',{
     labels:PHONGS,
-    datasets:[{label:'SL KV',data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p),'kv')),backgroundColor:TEAL_PAL}]
+    datasets:[{label:'SL KV',data:PHONGS.map(p=>sum(getActive().filter(r=>r.phong===p),'kv')),backgroundColor:TEAL_PAL}]
   },{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
 
   // Table
@@ -768,7 +769,7 @@ function renderTQ() {
 
 // ── TAB: LÃNH ĐẠO ─────────────────────────────────────────────
 function renderLD() {
-  const lds=DATA.filter(isLD);
+  const lds=getActive().filter(isLD);
   document.getElementById('kpi-ld').innerHTML=[
     {l:'Lãnh đạo',v:lds.length,s:'TP/PTP/GĐ/PGĐ',c:''},
     {l:'TB Dư nợ',v:avg(lds,'dn').toFixed(0),s:'tỷ/người',c:'green'},
@@ -829,12 +830,12 @@ function renderLD() {
 function renderCB() {
   const fp=document.getElementById('f-phong-cb').value;
   const sk=document.getElementById('f-sort-cb').value;
-  let cbs=DATA.filter(r=>!isLD(r));
+  let cbs=getActive().filter(r=>!isLD(r));
   if(fp) cbs=cbs.filter(r=>r.phong===fp);
   cbs=[...cbs].sort((a,b)=>(b[sk]||0)-(a[sk]||0));
   document.getElementById('bench-info-cb').innerHTML=benchInfoHTML(benchCB);
 
-  const allCB=DATA.filter(r=>!isLD(r));
+  const allCB=getActive().filter(r=>!isLD(r));
   document.getElementById('kpi-cb').innerHTML=[
     {l:'Tổng CB CM',v:allCB.length,s:'chuyên viên/GDV',c:''},
     {l:'Có dữ liệu QM',v:allCB.filter(r=>r.dn!=null).length,s:`/ ${allCB.length} CB`,c:''},
@@ -882,14 +883,15 @@ function renderCB() {
 
 // ── TAB: KHOẢN VAY ────────────────────────────────────────────
 function renderKV() {
-  const withKV=DATA.filter(r=>r.kv>0).sort((a,b)=>b.kv-a.kv);
-  const totKV=sum(DATA,'kv'), avgKV=withKV.length?sum(withKV,'kv')/withKV.length:0;
+  var _A=getActive();
+  const withKV=_A.filter(r=>r.kv>0).sort((a,b)=>b.kv-a.kv);
+  const totKV=sum(_A,'kv'), avgKV=withKV.length?sum(withKV,'kv')/withKV.length:0;
   document.getElementById('kpi-kv').innerHTML=[
     {l:'Tổng SL KV',v:totKV.toLocaleString('vi'),s:'toàn KBL',c:''},
-    {l:'CB có KV',v:withKV.length,s:`/ ${DATA.length} CB`,c:''},
+    {l:'CB có KV',v:withKV.length,s:`/ ${_A.length} CB`,c:''},
     {l:'TB/CB có KV',v:avgKV.toFixed(0),s:'khoản vay',c:'green'},
-    {l:'KV Lãnh đạo',v:sum(DATA.filter(isLD),'kv'),s:'tổng',c:'blue'},
-    {l:'KV Cán bộ',v:sum(DATA.filter(r=>!isLD(r)),'kv'),s:'tổng',c:'gold'},
+    {l:'KV Lãnh đạo',v:sum(_A.filter(isLD),'kv'),s:'tổng',c:'blue'},
+    {l:'KV Cán bộ',v:sum(_A.filter(r=>!isLD(r)),'kv'),s:'tổng',c:'gold'},
     {l:'#1 CB',v:withKV[0]?.kv||0,s:withKV[0]?.ten||'—',c:'orange'},
   ].map(k=>`<div class="kpi ${k.c}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
@@ -903,8 +905,8 @@ function renderKV() {
   mkChart('c-kv-cmp','bar',{
     labels:PHONGS,
     datasets:[
-      {label:'Lãnh đạo',data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p&&isLD(r)),'kv')),backgroundColor:'rgba(27,94,84,.85)'},
-      {label:'Cán bộ', data:PHONGS.map(p=>sum(DATA.filter(r=>r.phong===p&&!isLD(r)),'kv')),backgroundColor:'rgba(200,169,81,.75)'},
+      {label:'Lãnh đạo',data:PHONGS.map(p=>sum(_A.filter(r=>r.phong===p&&isLD(r)),'kv')),backgroundColor:'rgba(27,94,84,.85)'},
+      {label:'Cán bộ', data:PHONGS.map(p=>sum(_A.filter(r=>r.phong===p&&!isLD(r)),'kv')),backgroundColor:'rgba(200,169,81,.75)'},
     ]
   },{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
 
@@ -914,8 +916,8 @@ function renderKV() {
     <th class="ttip" data-tip="vs TB cùng nhóm (LD hoặc CB)">vs TB nhóm</th>
     <th>Đánh giá</th>
   </tr></thead><tbody>`;
-  const avgKV_LD=sum(DATA.filter(isLD),'kv')/(DATA.filter(isLD).length||1);
-  const avgKV_CB=sum(DATA.filter(r=>!isLD(r)),'kv')/(DATA.filter(r=>!isLD(r)).length||1);
+  const avgKV_LD=sum(_A.filter(isLD),'kv')/(_A.filter(isLD).length||1);
+  const avgKV_CB=sum(_A.filter(r=>!isLD(r)),'kv')/(_A.filter(r=>!isLD(r)).length||1);
   withKV.forEach((r,i)=>{
     const rk=i+1;
     const p=(r.kv-avgKV)/avgKV*100;
@@ -941,7 +943,7 @@ function renderKV() {
 function renderSS() {
   const fp=document.getElementById('f-phong-ss').value;
   const fl=document.getElementById('f-loai-ss').value;
-  let data=DATA.filter(r=>r.dn!=null||r.kv>0);
+  let data=getActive().filter(r=>r.dn!=null||r.kv>0);
   if(fp) data=data.filter(r=>r.phong===fp);
   if(fl==='ld') data=data.filter(isLD);
   if(fl==='cb') data=data.filter(r=>!isLD(r));
@@ -988,7 +990,7 @@ function renderSS() {
 
 // ── TAB: BIỂU ĐỒ ─────────────────────────────────────────────
 function renderBieu() {
-  const s=p=>DATA.filter(r=>r.phong===p);
+  var _B=getActive(); const s=p=>_B.filter(r=>r.phong===p);
   mkChart('c-tnt','bar',{labels:PHONGS,datasets:[{label:'TNT (tỷ)',data:PHONGS.map(p=>sum(s(p),'tnt').toFixed(2)),backgroundColor:'rgba(0,115,107,.8)',borderRadius:4}]},{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
   mkChart('c-nim','bar',{labels:PHONGS,datasets:[
     {label:'NIM HĐV (%)',data:PHONGS.map(p=>avg(s(p),'nim').toFixed(2)),backgroundColor:'rgba(200,169,81,.8)',borderRadius:4},
@@ -999,22 +1001,22 @@ function renderBieu() {
     {label:'Lãnh đạo',data:PHONGS.map(p=>s(p).filter(isLD).length),backgroundColor:'rgba(27,94,84,.85)',borderRadius:4},
     {label:'Cán bộ',data:PHONGS.map(p=>s(p).filter(r=>!isLD(r)).length),backgroundColor:'rgba(200,169,81,.75)',borderRadius:4}
   ]},{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
-  const topHDV=[...DATA].filter(r=>r.hdv!=null&&r.hdv>0).sort((a,b)=>b.hdv-a.hdv).slice(0,10);
+  const topHDV=[..._B].filter(r=>r.hdv!=null&&r.hdv>0).sort((a,b)=>b.hdv-a.hdv).slice(0,10);
   mkChart('c-top-dn','bar',{
     labels:topHDV.map(r=>r.ten.split(' ').slice(-2).join(' ')),
     datasets:[{label:'HĐV (tỷ)',data:topHDV.map(r=>r.hdv),backgroundColor:topHDV.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(200,169,81,.8)'),borderRadius:4}]
   },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
-  const topTNT=[...DATA].filter(r=>r.tnt!=null&&r.tnt>0).sort((a,b)=>b.tnt-a.tnt).slice(0,10);
+  const topTNT=[..._B].filter(r=>r.tnt!=null&&r.tnt>0).sort((a,b)=>b.tnt-a.tnt).slice(0,10);
   mkChart('c-top-tnt','bar',{
     labels:topTNT.map(r=>r.ten.split(' ').slice(-2).join(' ')),
     datasets:[{label:'TNT (tỷ)',data:topTNT.map(r=>r.tnt.toFixed(2)),backgroundColor:topTNT.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(46,125,114,.75)'),borderRadius:4}]
   },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
-  const topDV=[...DATA].filter(r=>r.dv!=null&&r.dv>0).sort((a,b)=>b.dv-a.dv).slice(0,10);
+  const topDV=[..._B].filter(r=>r.dv!=null&&r.dv>0).sort((a,b)=>b.dv-a.dv).slice(0,10);
   mkChart('c-top-dv','bar',{
     labels:topDV.map(r=>r.ten.split(' ').slice(-2).join(' ')),
     datasets:[{label:'DV ròng (tr)',data:topDV.map(r=>r.dv),backgroundColor:topDV.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(0,150,136,.75)'),borderRadius:4}]
   },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}});
-  const topDN2=[...DATA].filter(r=>r.dn!=null&&r.dn>0).sort((a,b)=>b.dn-a.dn).slice(0,10);
+  const topDN2=[..._B].filter(r=>r.dn!=null&&r.dn>0).sort((a,b)=>b.dn-a.dn).slice(0,10);
   mkChart('c-top-dn2','bar',{
     labels:topDN2.map(r=>r.ten.split(' ').slice(-2).join(' ')),
     datasets:[{label:'DN (tỷ)',data:topDN2.map(r=>r.dn),backgroundColor:topDN2.map(r=>isLD(r)?'rgba(27,94,84,.85)':'rgba(0,150,136,.75)'),borderRadius:4}]
@@ -1466,7 +1468,14 @@ async function loadDataFromGAS(){
     // Re-render toàn bộ dashboard với data mới
     bieuRendered=false;
     renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
-    refreshDateDisplay(); // Gọi CUỐI CÙNG, sau tất cả render
+    refreshDateDisplay();
+    // Đảm bảo tab TQ vẫn active sau khi async load xong
+    // (chỉ nếu user chưa navigate sang tab khác)
+    if(currentTabId === 'tq' || !currentTabId) {
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
+      var p = document.getElementById('tab-tq');
+      if(p) p.style.display='block';
+    }
   } catch(e){
     if(badge) badge.textContent=IMP.date?'📅 Kỳ '+IMP.date:'📅 Dữ liệu gốc';
     if(e.message!=='empty') console.warn('loadDataFromGAS:',e.message);
@@ -1990,22 +1999,28 @@ async function syncGoogleSheets() {
 
 // Wrap init in window.onload so all script blocks are parsed first
 window.addEventListener('load', function() {
-  loadDataFromGAS();
+  // 1. Init display trước — chỉ show tab TQ
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
+  var initPanel = document.getElementById('tab-tq');
+  if(initPanel){ initPanel.style.display='block'; }
+
+  // 2. Render với SEED data ngay
   renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
   document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
-  // Init display
-  document.querySelectorAll('.tab-panel').forEach(function(p){ p.style.display='none'; });
-  var initPanel = document.getElementById('tab-tq');
-  if(initPanel){ initPanel.style.display='block'; }
+
+  // 3. Load config
   loadGHConfig();
   loadSavedGSUrls();
   qlLoadSaved();
   ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id,i){
     validateGSUrl(id,'gs-status-'+(i+1));
   });
+
+  // 4. Load GAS async — khi xong sẽ re-render, KHÔNG ảnh hưởng display state
+  loadDataFromGAS();
 });
 
 // ============================================================
@@ -2172,6 +2187,13 @@ function refreshDateDisplay(){
 // ════════════════════════════════════════════════════════════
 var ACTIVE_CB = null;
 
+// Trả về danh sách CB đang được chọn (dùng trong tất cả render fn)
+function getActive(){
+  if(!ACTIVE_CB) return DATA;
+  var result = DATA.filter(function(r){ return !!ACTIVE_CB[r.ma]; });
+  return result.length ? result : DATA; // fallback nếu chưa có lựa chọn
+}
+
 function qlInit(){
   if(!ACTIVE_CB) ACTIVE_CB = {};
   DATA.forEach(function(r){
@@ -2192,11 +2214,11 @@ function qlRender(){
 
   // KPI
   document.getElementById('kpi-ql').innerHTML =
-    [{l:'Tổng hệ thống', v:total,             s:'cán bộ',          c:''},
-     {l:'Đang chọn',     v:active,            s:'được tính',       c:'green'},
-     {l:'Lãnh đạo',      v:ldOn+'/'+ldAll,    s:'được chọn',       c:''},
-     {l:'Cán bộ CM',     v:cbOn+'/'+cbAll,    s:'được chọn',       c:'gold'},
-     {l:'Bỏ qua',        v:total-active,      s:'CB',              c:'orange'},
+    [{l:'Tổng CB hệ thống', v:total,          s:'cán bộ',                c:''},
+     {l:'✅ Đang áp dụng', v:getActive().length, s:'CB trong tính toán',   c:'green'},
+     {l:'Lãnh đạo',       v:ldOn+'/'+ldAll,   s:'được tích chọn',         c:''},
+     {l:'Cán bộ CM',      v:cbOn+'/'+cbAll,   s:'được tích chọn',         c:'gold'},
+     {l:'Chưa áp dụng',   v:(active!==getActive().length)?'⚠️ Có thay đổi':'✓ Đã lưu', s:'', c:''},
     ].map(function(k){
       return '<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div>'
             +'<div class="kpi-val">'+k.v+'</div>'
@@ -2260,13 +2282,22 @@ function qlSelectAll(val){
 
 function qlApply(){
   qlInit();
-  var active = DATA.filter(function(r){ return !!ACTIVE_CB[r.ma]; }).length;
+  var active = getActive().length;
+
+  // Lưu vào localStorage
   try{ localStorage.setItem('bidv_active_cb',
-    JSON.stringify(DATA.map(function(r){ return {ma:r.ma,on:!!ACTIVE_CB[r.ma]}; })));
+    JSON.stringify(DATA.map(function(r){ return {ma:r.ma, on:!!ACTIVE_CB[r.ma]}; })));
   }catch(e){}
+
+  // Re-render TẤT CẢ tabs để phản ánh lựa chọn mới
+  bieuRendered = false;
+  renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+  refreshDateDisplay();
+  qlRender(); // cập nhật KPI tab QL
+
   var st = document.getElementById('gs-sync-status');
   if(st){
-    st.textContent = '✅ Đã lưu: '+active+'/'+DATA.length+' CB được chọn';
+    st.textContent = '✅ Đã áp dụng: '+active+'/'+DATA.length+' CB được chọn';
     st.style.color = 'var(--green)';
     setTimeout(function(){ st.textContent=''; }, 5000);
   }
@@ -2276,6 +2307,9 @@ function qlReset(){
   ACTIVE_CB = null;
   qlInit();
   try{ localStorage.removeItem('bidv_active_cb'); }catch(e){}
+  bieuRendered=false;
+  renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+  refreshDateDisplay();
   qlRender();
 }
 
@@ -2285,7 +2319,12 @@ function qlLoadSaved(){
     if(!s) return;
     qlInit();
     JSON.parse(s).forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
-  }catch(e){}
+    // Áp dụng ngay vào render — không gọi qlApply để tránh loop
+    bieuRendered=false;
+    renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+    refreshDateDisplay();
+    console.log('QL: loaded saved selection, active='+getActive().length);
+  }catch(e){ console.warn('qlLoadSaved err:',e); }
 }
 
 function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
