@@ -197,12 +197,12 @@ canvas{max-height:260px}
     <p>BIDV Chi nhánh Tràng Tiền – Hà Nội &nbsp;|&nbsp; KHCN + 4 PGD + P.GDKH</p>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span class="data-badge badge-live" id="src-badge">📅 Dữ liệu gốc 15/05/2026</span>
+    <span class="data-badge badge-live" id="src-badge" class="data-badge badge-import">📅 Dữ liệu: 21/05/2026</span>
     <div id="date-display" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:8px;padding:5px 14px;text-align:center">
       <div style="font-size:9px;opacity:.75;letter-spacing:.5px;text-transform:uppercase">Kỳ số liệu</div>
       <div id="date-display-val" style="font-size:16px;font-weight:900;letter-spacing:.5px">--/--/----</div>
     </div>
-    <span class="hdr-badge" id="period-badge">42 Cán bộ</span>
+    <span class="hdr-badge" id="period-badge">23 Cán bộ</span>
   </div>
 </div>
 
@@ -214,7 +214,6 @@ canvas{max-height:260px}
   <div class="tab" onclick="gTab('kv',this)">📈 Khoản Vay</div>
   <div class="tab" onclick="gTab('ss',this)">⚖️ So Sánh</div>
   <div class="tab" onclick="gTab('bieu',this)">📉 Biểu Đồ</div>
-  <div class="tab" onclick="gTab('kh',this)">🎯 Kế hoạch</div>
   <div class="tab" onclick="gTab('ql',this)">⚙️ Quản lý CB</div>
   <div class="tab" onclick="gTab('imp',this)">🔄 Import</div>
 </div>
@@ -344,67 +343,6 @@ canvas{max-height:260px}
 </div>
 
 
-<!-- ══ TAB KẾ HOẠCH ══ -->
-<div id="tab-kh" class="tab-panel">
-  <div class="bench-strip" style="margin-bottom:12px;flex-wrap:wrap;gap:10px">
-    <div style="font-size:13px;font-weight:700;color:var(--teal-d)">🎯 Theo dõi Kế hoạch Chỉ tiêu theo Quý / Năm</div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto">
-      <span style="font-size:11px;color:var(--gray)">Kỳ theo dõi:</span>
-      <select id="kh-quy" onchange="renderKH()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:5px">
-        <option value="q1">Quý 1</option>
-        <option value="q2">Quý 2</option>
-        <option value="q3">Quý 3</option>
-        <option value="q4">Quý 4</option>
-        <option value="nam" selected>Cả năm</option>
-      </select>
-      <select id="kh-phong" onchange="renderKH()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:5px">
-        <option value="">Tất cả Phòng</option>
-        <option value="P. KHCN">P. KHCN</option>
-        <option value="PGD Lương Định Của">PGD Lương Định Của</option>
-        <option value="PGD Nam Cao">PGD Nam Cao</option>
-        <option value="PGD Hào Nam">PGD Hào Nam</option>
-        <option value="PGD West Lake">PGD West Lake</option>
-        <option value="P. GD KH">P. GD KH</option>
-      </select>
-      <select id="kh-loai" onchange="renderKH()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:5px">
-        <option value="">Tất cả Loại</option>
-        <option value="ld">👑 Lãnh đạo</option>
-        <option value="cb">👤 Cán bộ CM</option>
-      </select>
-      <select id="kh-sort" onchange="renderKH()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:5px">
-        <option value="phong">Sắp xếp: Theo Phòng</option>
-        <option value="loai">Sắp xếp: Loại (LD trước)</option>
-        <option value="dn">Dư nợ thực tế</option>
-        <option value="hdv">Huy động vốn TT</option>
-        <option value="tnt">Thu nhập thuần TT</option>
-        <option value="kv">Số lượng KV</option>
-        <option value="pct_dn">% Hoàn thành DN</option>
-        <option value="pct_hdv">% Hoàn thành HĐV</option>
-        <option value="pct_tnt">% Hoàn thành TNT</option>
-        <option value="pct_kv">% Hoàn thành KV</option>
-      </select>
-      <button id="kh-dir-btn" onclick="khToggleDir()"
-        title="Đổi chiều sắp xếp"
-        style="padding:4px 10px;font-size:13px;border:1px solid var(--border);border-radius:5px;background:#fff;cursor:pointer;line-height:1;font-weight:700;color:var(--teal-d)">
-        ↓
-      </button>
-      <label style="font-size:11px;display:flex;align-items:center;gap:4px">
-        <input type="checkbox" id="kh-active-only" onchange="renderKH()" style="accent-color:var(--teal)">
-        Chỉ CB được chọn
-      </label>
-    </div>
-  </div>
-  <div class="kpi-grid" id="kpi-kh"></div>
-  <div class="tbl-wrap" style="margin-top:10px">
-    <table id="tbl-kh"></table>
-  </div>
-  <div style="margin-top:12px;padding:10px 14px;background:var(--teal-l);border-radius:8px;font-size:11px;color:var(--gray)">
-    ℹ️ Số liệu kế hoạch hiện tại là <b>dữ liệu giả lập</b>. Anh có thể cập nhật bằng cách upload file Excel kế hoạch trong tab 🔄 Import. 
-    Định dạng: cột A=Mã CB, B=DN Q1, C=DN Q2, D=DN Q3, E=DN Q4, F=DN Năm, G-K=HĐV, L-P=TNT, Q-U=DV, V-Z=KV.
-  </div>
-</div>
-
-
 <!-- ══ TAB QUẢN LÝ CÁN BỘ ══ -->
 <div id="tab-ql" class="tab-panel">
   <div class="kpi-grid" id="kpi-ql"></div>
@@ -420,7 +358,7 @@ canvas{max-height:260px}
       <button class="btn btn-secondary" onclick="qlReset()"          style="font-size:11px;padding:5px 12px" title="Đặt lại tích mặc định">↺ Đặt lại</button>
     </div>
   </div>
-  <div class="sec-title" style="background:#5C6BC0">⚙️ Danh sách CB theo Phòng (157359, TP KHCN &amp; 4 GĐ PGD bỏ tích mặc định)</div>
+  <div class="sec-title" style="background:#5C6BC0">⚙️ Danh sách CB theo Phòng (157359 &amp; 157260 bỏ tích mặc định)</div>
   <div class="tbl-wrap" style="max-height:620px;overflow-y:auto"><table id="tbl-ql"></table></div>
 </div>
 
@@ -654,7 +592,7 @@ canvas{max-height:260px}
 // ══════════════════════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════════════════════
-const SEED = [{"ma": "157345", "ten": "Nguyễn Công Thành", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 677.7, "hdv": 659.4, "tnt": 6.69, "dv": 137.0, "nim": 1.75, "nim_td": 0.93, "kv": 102, "nim_tt": 0.95}, {"ma": "157332", "ten": "Nguyễn Thị Phương", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 370.0, "hdv": 159.6, "tnt": 2.75, "dv": 86.0, "nim": 2.75, "nim_td": 1.52, "kv": 297, "nim_tt": 1.53}, {"ma": "151417", "ten": "Nguyễn Thị Thanh Nga", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 708.9, "hdv": 445.0, "tnt": 5.45, "dv": 187.0, "nim": 2.53, "nim_td": 1.14, "kv": 209, "nim_tt": 1.16}, {"ma": "157271", "ten": "Trần Thị Hằng", "phong": "P. KHCN", "chucvu": "Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.1, "hdv": 85.0, "tnt": 1.2, "dv": 75.0, "nim": 3.24, "nim_td": 1.73, "nim_tt": -4.61, "kv": 15}, {"ma": "157359", "ten": "Nguyễn Việt Anh", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": null, "hdv": null, "tnt": null, "dv": null, "nim": null, "nim_td": null, "nim_tt": null, "kv": 0}, {"ma": "173264", "ten": "Lê Thùy Linh", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 191.8, "hdv": 90.1, "tnt": 1.65, "dv": 84.0, "nim": 2.91, "nim_td": 1.2, "kv": 249, "nim_tt": 1.26}, {"ma": "165874", "ten": "Ninh Thu Hương", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 302.1, "hdv": 291.7, "tnt": 2.69, "dv": 168.0, "nim": 1.0, "nim_td": 1.14, "kv": 181, "nim_tt": 1.2}, {"ma": "36691", "ten": "Phạm Thị Tuyết Mai", "phong": "PGD Lương Định Của", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 656.3, "hdv": 725.0, "tnt": 5.25, "dv": 163.0, "nim": 1.78, "nim_td": 1.26, "kv": 214, "nim_tt": 1.27}, {"ma": "157253", "ten": "Cao Thanh Thủy", "phong": "PGD Lương Định Của", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 54.3, "tnt": 1.02, "dv": 117.0, "nim": 2.04, "nim_td": 2.55, "nim_tt": 2.55, "kv": 21}, {"ma": "178446", "ten": "Phan Đức Trung", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 65.9, "hdv": 140.9, "tnt": 1.04, "dv": 9.0, "nim": 1.3, "nim_td": 1.28, "kv": 94, "nim_tt": 1.29}, {"ma": "157252", "ten": "Vũ Hoài Phương", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 404.7, "hdv": 318.2, "tnt": 3.12, "dv": 70.0, "nim": 1.18, "nim_td": 1.22, "kv": 343, "nim_tt": 1.22}, {"ma": "153545", "ten": "Nguyễn Thị Ngọc Diệp", "phong": "PGD Nam Cao", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 537.5, "hdv": 640.4, "tnt": 6.08, "dv": 99.0, "nim": 1.19, "nim_td": -1.57, "kv": 210, "nim_tt": -1.54}, {"ma": "157257", "ten": "Vũ Thị Ngọc Ánh", "phong": "PGD Nam Cao", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 0.0, "tnt": 0.0, "dv": 0.0, "nim": 3.85, "nim_td": 3.8, "nim_tt": 3.8, "kv": 1}, {"ma": "158495", "ten": "Nguyễn Trung Hiếu", "phong": "PGD Nam Cao", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 448.7, "hdv": 350.1, "tnt": 3.66, "dv": 297.0, "nim": 2.36, "nim_td": 1.13, "kv": 348, "nim_tt": 1.13}, {"ma": "149031", "ten": "Trần Văn Long", "phong": "PGD Hào Nam", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 473.3, "hdv": 552.0, "tnt": 5.04, "dv": 63.0, "nim": 2.55, "nim_td": 1.38, "kv": 145, "nim_tt": 1.38}, {"ma": "150432", "ten": "Tống Xuân Trường", "phong": "PGD Hào Nam", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 5.1, "hdv": 265.3, "tnt": 2.88, "dv": 387.0, "nim": 2.1, "nim_td": 1.49, "nim_tt": 1.55, "kv": 34}, {"ma": "145318", "ten": "Tạ Thị Vân", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 4", "loai": "Cán bộ", "dn": 465.1, "hdv": 379.4, "tnt": 5.15, "dv": 217.0, "nim": 1.7, "nim_td": 1.36, "kv": 337, "nim_tt": 1.39}, {"ma": "180168", "ten": "Bùi Mạnh Thắng", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 1", "loai": "Cán bộ", "dn": 279.1, "hdv": 120.9, "tnt": 2.53, "dv": 143.0, "nim": 2.82, "nim_td": 1.41, "kv": 120, "nim_tt": 1.43}, {"ma": "145344", "ten": "Bùi Phương Anh", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 687.2, "hdv": 771.2, "tnt": 8.31, "dv": 146.0, "nim": 2.24, "nim_td": 1.21, "kv": 189, "nim_tt": 1.23}, {"ma": "164065", "ten": "Dương Thanh Tùng", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 214.6, "hdv": 200.8, "tnt": 2.73, "dv": 92.0, "nim": 2.81, "nim_td": 1.67, "kv": 125, "nim_tt": 1.68}, {"ma": "28268", "ten": "Nguyễn Thị Thái Hà", "phong": "PGD West Lake", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 3.8, "hdv": 458.7, "tnt": 3.69, "dv": 99.0, "nim": 2.25, "nim_td": 1.68, "nim_tt": 1.68, "kv": 23}, {"ma": "182410", "ten": "Nguyễn Văn Thắng", "phong": "PGD West Lake", "chucvu": "Chuyên viên khách hàng hỗn hợp cấp 1", "loai": "Cán bộ", "dn": 115.5, "hdv": 134.7, "tnt": 1.63, "dv": 77.0, "nim": 0.58, "nim_td": 1.43, "kv": 113, "nim_tt": 1.44}, {"ma": "157260", "ten": "Phạm Thị Thúy Hằng", "phong": "P. GD KH", "chucvu": "Trưởng phòng Giao dịch Khách hàng", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.0, "hdv": 43.1, "tnt": 0.51, "dv": 82.0, "nim": 3.33, "nim_td": 3.54, "nim_tt": 3.55, "kv": 4}];
+const SEED = [{"ma":"157271","ten":"Trần Thị Hằng","phong":"P. KHCN","chucvu":"Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":2.6,"hdv":81.8,"tnt":1.24,"dv":76,"nim":3.24,"nim_td":1.76,"nim_tt":-4.51,"kv":14},{"ma":"157345","ten":"Nguyễn Công Thành","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":679.3,"hdv":660.4,"tnt":7.06,"dv":139,"nim":1.76,"nim_td":0.95,"nim_tt":0.97,"kv":100},{"ma":"157332","ten":"Nguyễn Thị Phương","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":369.5,"hdv":168.9,"tnt":2.9,"dv":86,"nim":2.75,"nim_td":1.52,"nim_tt":1.53,"kv":289},{"ma":"151417","ten":"Nguyễn Thị Thanh Nga","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":708.3,"hdv":446.6,"tnt":5.73,"dv":193,"nim":2.54,"nim_td":1.15,"nim_tt":1.17,"kv":204},{"ma":"157359","ten":"Nguyễn Việt Anh","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":null,"hdv":null,"tnt":null,"dv":null,"nim":null,"nim_td":null,"nim_tt":null,"kv":0},{"ma":"173264","ten":"Lê Thùy Linh","phong":"P. KHCN","chucvu":"Chuyên viên Khách hàng cá nhân cấp 2","loai":"Cán bộ","dn":190.8,"hdv":92.3,"tnt":1.74,"dv":86,"nim":3.8,"nim_td":1.2,"nim_tt":1.28,"kv":241},{"ma":"165874","ten":"Ninh Thu Hương","phong":"P. KHCN","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":307.2,"hdv":291.5,"tnt":2.82,"dv":172,"nim":1,"nim_td":1.15,"nim_tt":1.21,"kv":172},{"ma":"157253","ten":"Cao Thanh Thủy","phong":"PGD Lương Định Của","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":0,"hdv":52.4,"tnt":1.05,"dv":123,"nim":2.05,"nim_td":2.55,"nim_tt":2.55,"kv":18},{"ma":"36691","ten":"Phạm Thị Tuyết Mai","phong":"PGD Lương Định Của","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":653.4,"hdv":729.4,"tnt":5.53,"dv":168,"nim":1.79,"nim_td":1.28,"nim_tt":1.28,"kv":203},{"ma":"178446","ten":"Phan Đức Trung","phong":"PGD Lương Định Của","chucvu":"Chuyên viên Khách hàng cá nhân cấp 2","loai":"Cán bộ","dn":64.6,"hdv":169.8,"tnt":1.13,"dv":39,"nim":1.3,"nim_td":1.28,"nim_tt":1.29,"kv":95},{"ma":"157252","ten":"Vũ Hoài Phương","phong":"PGD Lương Định Của","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":410.3,"hdv":326,"tnt":3.29,"dv":72,"nim":2.49,"nim_td":1.23,"nim_tt":1.23,"kv":151},{"ma":"157257","ten":"Vũ Thị Ngọc Ánh","phong":"PGD Nam Cao","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":0,"hdv":0,"tnt":0,"dv":0,"nim":3.85,"nim_td":3.8,"nim_tt":3.8,"kv":1},{"ma":"153545","ten":"Nguyễn Thị Ngọc Diệp","phong":"PGD Nam Cao","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":539.3,"hdv":634,"tnt":6.37,"dv":102,"nim":1.19,"nim_td":-4.21,"nim_tt":-1.53,"kv":207},{"ma":"158495","ten":"Nguyễn Trung Hiếu","phong":"PGD Nam Cao","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":431.8,"hdv":336,"tnt":3.84,"dv":311,"nim":3.66,"nim_td":1.13,"nim_tt":1.14,"kv":222},{"ma":"150432","ten":"Tống Xuân Trường","phong":"PGD Hào Nam","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":5.1,"hdv":258,"tnt":2.97,"dv":394,"nim":2.09,"nim_td":1.55,"nim_tt":1.62,"kv":34},{"ma":"149031","ten":"Trần Văn Long","phong":"PGD Hào Nam","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":472.7,"hdv":543.1,"tnt":5.3,"dv":63,"nim":2.55,"nim_td":1.4,"nim_tt":1.4,"kv":143},{"ma":"145318","ten":"Tạ Thị Vân","phong":"PGD Hào Nam","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 4","loai":"Cán bộ","dn":458.7,"hdv":370.3,"tnt":5.28,"dv":220,"nim":1.51,"nim_td":1.37,"nim_tt":1.41,"kv":326},{"ma":"180168","ten":"Bùi Mạnh Thắng","phong":"PGD Hào Nam","chucvu":"Chuyên viên Khách hàng cá nhân cấp 1","loai":"Cán bộ","dn":0,"hdv":0,"tnt":2.27,"dv":126,"nim":2.81,"nim_td":1.41,"nim_tt":1.43,"kv":113},{"ma":"28268","ten":"Nguyễn Thị Thái Hà","phong":"PGD West Lake","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":3.8,"hdv":441.5,"tnt":3.87,"dv":101,"nim":2.36,"nim_td":1.69,"nim_tt":1.69,"kv":4},{"ma":"145344","ten":"Bùi Phương Anh","phong":"PGD West Lake","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":683.6,"hdv":759.4,"tnt":8.73,"dv":154,"nim":2.24,"nim_td":1.23,"nim_tt":1.25,"kv":187},{"ma":"164065","ten":"Dương Thanh Tùng","phong":"PGD West Lake","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":221.7,"hdv":199,"tnt":2.83,"dv":94,"nim":3.65,"nim_td":1.67,"nim_tt":1.68,"kv":122},{"ma":"182410","ten":"Nguyễn Văn Thắng","phong":"PGD West Lake","chucvu":"Chuyên viên khách hàng hỗn hợp cấp 1","loai":"Cán bộ","dn":116.1,"hdv":129.7,"tnt":1.69,"dv":81,"nim":1.16,"nim_td":1.44,"nim_tt":1.46,"kv":113},{"ma":"157260","ten":"Phạm Thị Thúy Hằng","phong":"P. GD KH","chucvu":"Trưởng phòng Giao dịch Khách hàng","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":1,"hdv":41.6,"tnt":0.53,"dv":82,"nim":3.33,"nim_td":3.5,"nim_tt":3.6,"kv":4}];
 
 
 const EXCLUDE_CV = ['giao dịch viên', 'chuyên viên ngân hàng đa năng', 'phó giám đốc phòng giao dịch phụ trách tác nghiệp'];
@@ -679,18 +617,6 @@ const LD_CVS = ['Trưởng phòng Khách hàng cá nhân','Phó Trưởng phòng
 
 // live data
 let DATA = filterExclude(JSON.parse(JSON.stringify(SEED)));
-
-// Kế hoạch chỉ tiêu (giả lập — sẽ import từ file thực tế)
-const KH_SEED = {"157345": {"dn_q1": 15, "dn_q2": 18, "dn_q3": 20, "dn_q4": 22, "dn_nam": 75, "hdv_q1": 200, "hdv_q2": 220, "hdv_q3": 240, "hdv_q4": 260, "hdv_nam": 920, "tnt_q1": 0.8, "tnt_q2": 0.9, "tnt_q3": 1.0, "tnt_q4": 1.1, "tnt_nam": 3.8, "dv_q1": 300, "dv_q2": 350, "dv_q3": 380, "dv_q4": 400, "dv_nam": 1430, "kv_q1": 30, "kv_q2": 35, "kv_q3": 38, "kv_q4": 40, "kv_nam": 143}, "157332": {"dn_q1": 12, "dn_q2": 14, "dn_q3": 16, "dn_q4": 18, "dn_nam": 60, "hdv_q1": 160, "hdv_q2": 180, "hdv_q3": 195, "hdv_q4": 210, "hdv_nam": 745, "tnt_q1": 0.7, "tnt_q2": 0.8, "tnt_q3": 0.9, "tnt_q4": 1.0, "tnt_nam": 3.4, "dv_q1": 250, "dv_q2": 280, "dv_q3": 300, "dv_q4": 320, "dv_nam": 1150, "kv_q1": 25, "kv_q2": 28, "kv_q3": 30, "kv_q4": 32, "kv_nam": 115}, "151417": {"dn_q1": 10, "dn_q2": 12, "dn_q3": 14, "dn_q4": 16, "dn_nam": 52, "hdv_q1": 150, "hdv_q2": 165, "hdv_q3": 175, "hdv_q4": 190, "hdv_nam": 680, "tnt_q1": 0.6, "tnt_q2": 0.7, "tnt_q3": 0.8, "tnt_q4": 0.9, "tnt_nam": 3.0, "dv_q1": 200, "dv_q2": 220, "dv_q3": 240, "dv_q4": 260, "dv_nam": 920, "kv_q1": 20, "kv_q2": 22, "kv_q3": 24, "kv_q4": 26, "kv_nam": 92}, "157271": {"dn_q1": 8, "dn_q2": 10, "dn_q3": 12, "dn_q4": 14, "dn_nam": 44, "hdv_q1": 180, "hdv_q2": 200, "hdv_q3": 215, "hdv_q4": 230, "hdv_nam": 825, "tnt_q1": 0.5, "tnt_q2": 0.6, "tnt_q3": 0.7, "tnt_q4": 0.8, "tnt_nam": 2.6, "dv_q1": 180, "dv_q2": 200, "dv_q3": 215, "dv_q4": 230, "dv_nam": 825, "kv_q1": 18, "kv_q2": 20, "kv_q3": 22, "kv_q4": 24, "kv_nam": 84}, "173264": {"dn_q1": 20, "dn_q2": 25, "dn_q3": 28, "dn_q4": 32, "dn_nam": 105, "hdv_q1": 50, "hdv_q2": 60, "hdv_q3": 65, "hdv_q4": 70, "hdv_nam": 245, "tnt_q1": 0.4, "tnt_q2": 0.5, "tnt_q3": 0.6, "tnt_q4": 0.7, "tnt_nam": 2.2, "dv_q1": 120, "dv_q2": 140, "dv_q3": 150, "dv_q4": 160, "dv_nam": 570, "kv_q1": 22, "kv_q2": 25, "kv_q3": 28, "kv_q4": 30, "kv_nam": 105}, "165874": {"dn_q1": 18, "dn_q2": 22, "dn_q3": 25, "dn_q4": 28, "dn_nam": 93, "hdv_q1": 45, "hdv_q2": 52, "hdv_q3": 58, "hdv_q4": 65, "hdv_nam": 220, "tnt_q1": 0.35, "tnt_q2": 0.42, "tnt_q3": 0.5, "tnt_q4": 0.58, "tnt_nam": 1.85, "dv_q1": 100, "dv_q2": 115, "dv_q3": 125, "dv_q4": 140, "dv_nam": 480, "kv_q1": 20, "kv_q2": 23, "kv_q3": 26, "kv_q4": 29, "kv_nam": 98}, "36691": {"dn_q1": 5, "dn_q2": 6, "dn_q3": 7, "dn_q4": 8, "dn_nam": 26, "hdv_q1": 120, "hdv_q2": 135, "hdv_q3": 145, "hdv_q4": 155, "hdv_nam": 555, "tnt_q1": 0.3, "tnt_q2": 0.35, "tnt_q3": 0.4, "tnt_q4": 0.45, "tnt_nam": 1.5, "dv_q1": 80, "dv_q2": 90, "dv_q3": 100, "dv_q4": 110, "dv_nam": 380, "kv_q1": 12, "kv_q2": 14, "kv_q3": 16, "kv_q4": 18, "kv_nam": 60}, "157253": {"dn_q1": 4, "dn_q2": 5, "dn_q3": 6, "dn_q4": 7, "dn_nam": 22, "hdv_q1": 130, "hdv_q2": 145, "hdv_q3": 155, "hdv_q4": 165, "hdv_nam": 595, "tnt_q1": 0.28, "tnt_q2": 0.33, "tnt_q3": 0.38, "tnt_q4": 0.43, "tnt_nam": 1.42, "dv_q1": 75, "dv_q2": 85, "dv_q3": 95, "dv_q4": 105, "dv_nam": 360, "kv_q1": 10, "kv_q2": 12, "kv_q3": 14, "kv_q4": 16, "kv_nam": 52}, "178446": {"dn_q1": 15, "dn_q2": 18, "dn_q3": 21, "dn_q4": 24, "dn_nam": 78, "hdv_q1": 30, "hdv_q2": 35, "hdv_q3": 38, "hdv_q4": 42, "hdv_nam": 145, "tnt_q1": 0.3, "tnt_q2": 0.35, "tnt_q3": 0.4, "tnt_q4": 0.45, "tnt_nam": 1.5, "dv_q1": 90, "dv_q2": 100, "dv_q3": 110, "dv_q4": 120, "dv_nam": 420, "kv_q1": 16, "kv_q2": 18, "kv_q3": 20, "kv_q4": 22, "kv_nam": 76}, "157252": {"dn_q1": 14, "dn_q2": 17, "dn_q3": 20, "dn_q4": 23, "dn_nam": 74, "hdv_q1": 28, "hdv_q2": 32, "hdv_q3": 36, "hdv_q4": 40, "hdv_nam": 136, "tnt_q1": 0.28, "tnt_q2": 0.33, "tnt_q3": 0.38, "tnt_q4": 0.43, "tnt_nam": 1.42, "dv_q1": 85, "dv_q2": 95, "dv_q3": 105, "dv_q4": 115, "dv_nam": 400, "kv_q1": 15, "kv_q2": 17, "kv_q3": 19, "kv_q4": 21, "kv_nam": 72}, "153545": {"dn_q1": 3, "dn_q2": 4, "dn_q3": 5, "dn_q4": 6, "dn_nam": 18, "hdv_q1": 90, "hdv_q2": 100, "hdv_q3": 110, "hdv_q4": 120, "hdv_nam": 420, "tnt_q1": 0.25, "tnt_q2": 0.3, "tnt_q3": 0.35, "tnt_q4": 0.4, "tnt_nam": 1.3, "dv_q1": 60, "dv_q2": 70, "dv_q3": 80, "dv_q4": 90, "dv_nam": 300, "kv_q1": 8, "kv_q2": 9, "kv_q3": 10, "kv_q4": 11, "kv_nam": 38}, "157257": {"dn_q1": 2, "dn_q2": 3, "dn_q3": 4, "dn_q4": 5, "dn_nam": 14, "hdv_q1": 80, "hdv_q2": 90, "hdv_q3": 100, "hdv_q4": 110, "hdv_nam": 380, "tnt_q1": 0.22, "tnt_q2": 0.27, "tnt_q3": 0.32, "tnt_q4": 0.37, "tnt_nam": 1.18, "dv_q1": 55, "dv_q2": 65, "dv_q3": 75, "dv_q4": 85, "dv_nam": 280, "kv_q1": 7, "kv_q2": 8, "kv_q3": 9, "kv_q4": 10, "kv_nam": 34}, "158495": {"dn_q1": 12, "dn_q2": 14, "dn_q3": 16, "dn_q4": 18, "dn_nam": 60, "hdv_q1": 25, "hdv_q2": 28, "hdv_q3": 31, "hdv_q4": 34, "hdv_nam": 118, "tnt_q1": 0.24, "tnt_q2": 0.28, "tnt_q3": 0.32, "tnt_q4": 0.36, "tnt_nam": 1.2, "dv_q1": 70, "dv_q2": 80, "dv_q3": 88, "dv_q4": 96, "dv_nam": 334, "kv_q1": 13, "kv_q2": 15, "kv_q3": 17, "kv_q4": 19, "kv_nam": 64}, "149031": {"dn_q1": 6, "dn_q2": 7, "dn_q3": 8, "dn_q4": 9, "dn_nam": 30, "hdv_q1": 280, "hdv_q2": 310, "hdv_q3": 330, "hdv_q4": 350, "hdv_nam": 1270, "tnt_q1": 0.35, "tnt_q2": 0.4, "tnt_q3": 0.45, "tnt_q4": 0.5, "tnt_nam": 1.7, "dv_q1": 100, "dv_q2": 110, "dv_q3": 120, "dv_q4": 130, "dv_nam": 460, "kv_q1": 10, "kv_q2": 11, "kv_q3": 12, "kv_q4": 13, "kv_nam": 46}, "150432": {"dn_q1": 5, "dn_q2": 6, "dn_q3": 7, "dn_q4": 8, "dn_nam": 26, "hdv_q1": 260, "hdv_q2": 285, "hdv_q3": 305, "hdv_q4": 325, "hdv_nam": 1175, "tnt_q1": 0.32, "tnt_q2": 0.37, "tnt_q3": 0.42, "tnt_q4": 0.47, "tnt_nam": 1.58, "dv_q1": 90, "dv_q2": 100, "dv_q3": 110, "dv_q4": 120, "dv_nam": 420, "kv_q1": 9, "kv_q2": 10, "kv_q3": 11, "kv_q4": 12, "kv_nam": 42}, "145318": {"dn_q1": 10, "dn_q2": 12, "dn_q3": 14, "dn_q4": 16, "dn_nam": 52, "hdv_q1": 20, "hdv_q2": 23, "hdv_q3": 26, "hdv_q4": 29, "hdv_nam": 98, "tnt_q1": 0.22, "tnt_q2": 0.26, "tnt_q3": 0.3, "tnt_q4": 0.34, "tnt_nam": 1.12, "dv_q1": 65, "dv_q2": 74, "dv_q3": 83, "dv_q4": 92, "dv_nam": 314, "kv_q1": 11, "kv_q2": 13, "kv_q3": 15, "kv_q4": 17, "kv_nam": 56}, "180168": {"dn_q1": 9, "dn_q2": 11, "dn_q3": 13, "dn_q4": 15, "dn_nam": 48, "hdv_q1": 18, "hdv_q2": 21, "hdv_q3": 24, "hdv_q4": 27, "hdv_nam": 90, "tnt_q1": 0.2, "tnt_q2": 0.24, "tnt_q3": 0.28, "tnt_q4": 0.32, "tnt_nam": 1.04, "dv_q1": 60, "dv_q2": 68, "dv_q3": 76, "dv_q4": 84, "dv_nam": 288, "kv_q1": 10, "kv_q2": 12, "kv_q3": 14, "kv_q4": 16, "kv_nam": 52}, "145344": {"dn_q1": 4, "dn_q2": 5, "dn_q3": 6, "dn_q4": 7, "dn_nam": 22, "hdv_q1": 200, "hdv_q2": 220, "hdv_q3": 235, "hdv_q4": 250, "hdv_nam": 905, "tnt_q1": 0.28, "tnt_q2": 0.33, "tnt_q3": 0.38, "tnt_q4": 0.43, "tnt_nam": 1.42, "dv_q1": 70, "dv_q2": 78, "dv_q3": 86, "dv_q4": 94, "dv_nam": 328, "kv_q1": 8, "kv_q2": 9, "kv_q3": 10, "kv_q4": 11, "kv_nam": 38}, "164065": {"dn_q1": 3, "dn_q2": 4, "dn_q3": 5, "dn_q4": 6, "dn_nam": 18, "hdv_q1": 210, "hdv_q2": 232, "hdv_q3": 248, "hdv_q4": 264, "hdv_nam": 954, "tnt_q1": 0.25, "tnt_q2": 0.3, "tnt_q3": 0.35, "tnt_q4": 0.4, "tnt_nam": 1.3, "dv_q1": 65, "dv_q2": 73, "dv_q3": 81, "dv_q4": 89, "dv_nam": 308, "kv_q1": 7, "kv_q2": 8, "kv_q3": 9, "kv_q4": 10, "kv_nam": 34}, "28268": {"dn_q1": 5, "dn_q2": 6, "dn_q3": 7, "dn_q4": 8, "dn_nam": 26, "hdv_q1": 430, "hdv_q2": 475, "hdv_q3": 505, "hdv_q4": 535, "hdv_nam": 1945, "tnt_q1": 0.38, "tnt_q2": 0.43, "tnt_q3": 0.48, "tnt_q4": 0.53, "tnt_nam": 1.82, "dv_q1": 80, "dv_q2": 88, "dv_q3": 96, "dv_q4": 104, "dv_nam": 368, "kv_q1": 9, "kv_q2": 10, "kv_q3": 11, "kv_q4": 12, "kv_nam": 42}, "182410": {"dn_q1": 8, "dn_q2": 10, "dn_q3": 12, "dn_q4": 14, "dn_nam": 44, "hdv_q1": 22, "hdv_q2": 25, "hdv_q3": 28, "hdv_q4": 31, "hdv_nam": 106, "tnt_q1": 0.18, "tnt_q2": 0.22, "tnt_q3": 0.26, "tnt_q4": 0.3, "tnt_nam": 0.96, "dv_q1": 55, "dv_q2": 62, "dv_q3": 69, "dv_q4": 76, "dv_nam": 262, "kv_q1": 9, "kv_q2": 10, "kv_q3": 11, "kv_q4": 12, "kv_nam": 42}, "157260": {"dn_q1": 2, "dn_q2": 2.5, "dn_q3": 3, "dn_q4": 3.5, "dn_nam": 11, "hdv_q1": 40, "hdv_q2": 45, "hdv_q3": 48, "hdv_q4": 52, "hdv_nam": 185, "tnt_q1": 0.14, "tnt_q2": 0.16, "tnt_q3": 0.18, "tnt_q4": 0.2, "tnt_nam": 0.68, "dv_q1": 45, "dv_q2": 50, "dv_q3": 55, "dv_q4": 60, "dv_nam": 210, "kv_q1": 3, "kv_q2": 4, "kv_q3": 4, "kv_q4": 5, "kv_nam": 16}, "157359": {"dn_q1": 0, "dn_q2": 0, "dn_q3": 0, "dn_q4": 0, "dn_nam": 0, "hdv_q1": 0, "hdv_q2": 0, "hdv_q3": 0, "hdv_q4": 0, "hdv_nam": 0, "tnt_q1": 0, "tnt_q2": 0, "tnt_q3": 0, "tnt_q4": 0, "tnt_nam": 0, "dv_q1": 0, "dv_q2": 0, "dv_q3": 0, "dv_q4": 0, "dv_nam": 0, "kv_q1": 0, "kv_q2": 0, "kv_q3": 0, "kv_q4": 0, "kv_nam": 0}};
-let KH = Object.assign({}, KH_SEED);
-var khSortDir = -1; // -1 = giảm dần (cao→thấp), 1 = tăng dần (thấp→cao)
-
-function khToggleDir(){
-  khSortDir = khSortDir * -1;
-  var btn = document.getElementById('kh-dir-btn');
-  if(btn) btn.textContent = khSortDir === -1 ? '↓' : '↑';
-  renderKH();
-}
 
 // benchmark mode per tab
 let benchTQ = 'phong', benchLD = 'phong', benchCB = 'phong', benchSS = 'phong';
@@ -770,7 +696,6 @@ function gTab(id, el) {
   if (id==='ss')   { renderSS(); }
   if (id==='bieu') { if(!bieuRendered){ renderBieu(); bieuRendered=true; } }
   if (id==='ql')   { qlRender(); }
-  if (id==='kh')   { renderKH(); }
   currentTabId = id;
 }
 
@@ -2291,9 +2216,7 @@ function qlInit(){
   if(!ACTIVE_CB) ACTIVE_CB = {};
   DATA.forEach(function(r){
     if(!(r.ma in ACTIVE_CB)){
-      // Mặc định bỏ tích: 157359, TP KHCN, 4 GĐ PGD
-      var _off = ['157359', '157271', '157253', '157257', '150432', '28268'];
-      ACTIVE_CB[r.ma] = _off.indexOf(r.ma) === -1;
+      ACTIVE_CB[r.ma] = (r.ma !== '157359' && r.ma !== '157260');
     }
   });
 }
@@ -2423,236 +2346,14 @@ function qlLoadSaved(){
   try{
     var s = localStorage.getItem('bidv_active_cb');
     if(!s) return;
-    // Kiểm tra version — nếu lưu trước khi cập nhật default thì reset
-    var parsed = JSON.parse(s);
-    // Nếu số lượng khác DATA → reset về default mới
-    if(parsed.length !== DATA.length){ localStorage.removeItem('bidv_active_cb'); return; }
     qlInit();
-    parsed.forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
+    JSON.parse(s).forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
     // Áp dụng ngay vào render — không gọi qlApply để tránh loop
     bieuRendered=false;
     renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
     refreshDateDisplay();
     console.log('QL: loaded saved selection, active='+getActive().length);
   }catch(e){ console.warn('qlLoadSaved err:',e); }
-}
-
-// ════════════════════════════════════════════════════════════
-// TAB KẾ HOẠCH
-// ════════════════════════════════════════════════════════════
-function renderKH(){
-  var quy     = document.getElementById('kh-quy').value;     // q1/q2/q3/q4/nam
-  var phong   = document.getElementById('kh-phong').value;
-  var actOnly = document.getElementById('kh-active-only').checked;
-
-  var loai  = document.getElementById('kh-loai').value;
-  var sort  = document.getElementById('kh-sort').value;
-
-  var rows = DATA.filter(function(r){
-    if(phong && r.phong !== phong) return false;
-    if(loai === 'ld' && !isLD(r)) return false;
-    if(loai === 'cb' &&  isLD(r)) return false;
-    if(actOnly && ACTIVE_CB && !ACTIVE_CB[r.ma]) return false;
-    return true;
-  });
-
-  // Cập nhật icon nút sort
-  var dirBtn = document.getElementById('kh-dir-btn');
-  if(dirBtn) dirBtn.textContent = khSortDir===-1?'↓':'↑';
-
-  // Sắp xếp
-  rows = rows.slice();
-  var D = khSortDir; // -1: giảm, 1: tăng
-  var sfxS = quy==='nam'?'_nam':'_'+quy;
-
-  function getPct(r, key){
-    var kh_v = (KH[r.ma]||{})[key+sfxS]||0;
-    var tt_v = r[key]||0;
-    return kh_v ? tt_v/kh_v : 0;
-  }
-
-  if(sort==='phong'){
-    rows.sort(function(a,b){
-      var pi=PHONGS.indexOf(a.phong)-PHONGS.indexOf(b.phong);
-      if(pi!==0) return pi;
-      return isLD(a)?-1:isLD(b)?1:0;
-    });
-  } else if(sort==='loai'){
-    rows.sort(function(a,b){
-      var aL=isLD(a)?0:1, bL=isLD(b)?0:1;
-      if(aL!==bL) return (aL-bL)*D;
-      return PHONGS.indexOf(a.phong)-PHONGS.indexOf(b.phong);
-    });
-  } else if(sort==='dn'){
-    rows.sort(function(a,b){ return ((b.dn||0)-(a.dn||0))*D; });
-  } else if(sort==='hdv'){
-    rows.sort(function(a,b){ return ((b.hdv||0)-(a.hdv||0))*D; });
-  } else if(sort==='tnt'){
-    rows.sort(function(a,b){ return ((b.tnt||0)-(a.tnt||0))*D; });
-  } else if(sort==='kv'){
-    rows.sort(function(a,b){ return ((b.kv||0)-(a.kv||0))*D; });
-  } else if(sort==='pct_dn'){
-    rows.sort(function(a,b){ return (getPct(b,'dn')-getPct(a,'dn'))*D; });
-  } else if(sort==='pct_hdv'){
-    rows.sort(function(a,b){ return (getPct(b,'hdv')-getPct(a,'hdv'))*D; });
-  } else if(sort==='pct_tnt'){
-    rows.sort(function(a,b){ return (getPct(b,'tnt')-getPct(a,'tnt'))*D; });
-  } else if(sort==='pct_kv'){
-    rows.sort(function(a,b){ return (getPct(b,'kv')-getPct(a,'kv'))*D; });
-  }
-
-  // KPI tổng
-  var totDN=0, totHDV=0, totTNT=0, totDV=0, totKV=0;
-  var actDN=0, actHDV=0, actTNT=0, actDV=0, actKV=0;
-  rows.forEach(function(r){
-    var kh = KH[r.ma] || {};
-    var sfx = quy==='nam'?'_nam':'_'+quy;
-    totDN  += kh['dn'+sfx]  ||0;
-    totHDV += kh['hdv'+sfx] ||0;
-    totTNT += kh['tnt'+sfx] ||0;
-    totDV  += kh['dv'+sfx]  ||0;
-    totKV  += kh['kv'+sfx]  ||0;
-    // Thực tế (từ DATA)
-    if(r.dn)  actDN  += r.dn;
-    if(r.hdv) actHDV += r.hdv;
-    if(r.tnt) actTNT += r.tnt;
-    if(r.dv)  actDV  += r.dv;
-    actKV += r.kv||0;
-  });
-
-  function pctClass(act,kh){ if(!kh) return ''; var p=act/kh*100; return p>=100?'color:var(--green);font-weight:700':p>=80?'color:var(--gold)':'color:var(--red)'; }
-  function pctStr(act,kh){ if(!kh||!act) return '—'; return (act/kh*100).toFixed(1)+'%'; }
-
-  document.getElementById('kpi-kh').innerHTML=[
-    {l:'Dư nợ KH',   v: totDN.toFixed(1)+'T',  s:'Thực: '+actDN.toFixed(1)+'T = '+pctStr(actDN,totDN), c:''},
-    {l:'HĐV KH',     v: totHDV.toFixed(0)+'T',  s:'Thực: '+actHDV.toFixed(0)+'T = '+pctStr(actHDV,totHDV), c:'green'},
-    {l:'TNT KH',     v: totTNT.toFixed(2)+'T',  s:'Thực: '+actTNT.toFixed(2)+'T = '+pctStr(actTNT,totTNT), c:''},
-    {l:'DV ròng KH', v: totDV.toFixed(0)+'tr',  s:'Thực: '+actDV.toFixed(0)+'tr = '+pctStr(actDV,totDV), c:'gold'},
-    {l:'SL KV KH',   v: totKV,                  s:'Thực: '+actKV+' KV = '+pctStr(actKV,totKV), c:''},
-  ].map(function(k){
-    return '<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div>'
-          +'<div class="kpi-val">'+k.v+'</div>'
-          +'<div class="kpi-sub">'+k.s+'</div></div>';
-  }).join('');
-
-  // Table
-  var qLabel = {q1:'Q1',q2:'Q2',q3:'Q3',q4:'Q4',nam:'Cả năm'}[quy]||quy;
-  function thSort(key, label, bg){
-    var active = sort===key;
-    var arrow = active?(khSortDir===-1?' ↓':' ↑'):'';
-    var style = 'cursor:pointer;user-select:none;'+(bg?'background:'+bg+';':'');
-    if(active) style += 'color:var(--teal-d);font-weight:700;';
-    return '<th data-skey="'+key+'" onclick="khQuickSort(this.dataset.skey)"'
-          +' title="Sắp xếp theo '+label+'"'
-          +' style="'+style+'">'+label+arrow+'</th>';
-  }
-  function thSortPct(key, label, bg){
-    var pkey = 'pct_'+key;
-    var active = sort===pkey;
-    var arrow = active?(khSortDir===-1?' ↓':' ↑'):'';
-    var style = 'cursor:pointer;font-size:10px;user-select:none;color:'
-               +(active?'var(--teal-d)':'var(--gray)')+';'
-               +(active?'font-weight:700;':'');
-    return '<th data-skey="'+pkey+'" onclick="khQuickSort(this.dataset.skey)"'
-          +' style="'+style+'">%TH'+arrow+'</th>';
-  }
-
-
-  var h = '<thead><tr>'
-    +'<th>#</th><th>Mã CB</th><th style="min-width:130px">Họ &amp; Tên</th>'
-    +'<th>Phòng</th><th>Loại</th>'
-    + thSort('dn','Dư nợ (tỷ)','#EBF8F7')+' <th colspan="2" style="background:#EBF8F7;font-size:11px">'+qLabel+'</th>'
-    + thSort('hdv','HĐV (tỷ)','#E8F5E9')+' <th colspan="2" style="background:#E8F5E9;font-size:11px">'+qLabel+'</th>'
-    + thSort('tnt','TNT (tỷ)','#FFF8E1')+' <th colspan="2" style="background:#FFF8E1;font-size:11px">'+qLabel+'</th>'
-    +'<th colspan="3" style="background:#EDE7F6;font-size:11px">DV ròng (tr) — '+qLabel+'</th>'
-    + thSort('kv','SL KV','#E3F2FD')+' <th colspan="2" style="background:#E3F2FD;font-size:11px">'+qLabel+'</th>'
-    +'</tr><tr>'
-    +'<th></th><th></th><th></th><th></th><th></th>';
-  ['dn','hdv','tnt',null,'kv'].forEach(function(key){
-    h += '<th style="font-size:10px;color:var(--gray)">KH</th>'
-      +'<th style="font-size:10px;color:var(--gray)">TT</th>';
-    if(key) h += thSortPct(key,'',null);
-    else h += '<th style="font-size:10px;color:var(--gray)">%TH</th>';
-  });
-  h += '</tr></thead><tbody>';
-
-  rows.forEach(function(r, i){
-    var kh  = KH[r.ma] || {};
-    var sfx = quy==='nam'?'_nam':'_'+quy;
-    var dn_kh  = kh['dn'+sfx]  ||0;
-    var hdv_kh = kh['hdv'+sfx] ||0;
-    var tnt_kh = kh['tnt'+sfx] ||0;
-    var dv_kh  = kh['dv'+sfx]  ||0;
-    var kv_kh  = kh['kv'+sfx]  ||0;
-    var dn_tt  = r.dn  ||0;
-    var hdv_tt = r.hdv ||0;
-    var tnt_tt = r.tnt ||0;
-    var dv_tt  = r.dv  ||0;
-    var kv_tt  = r.kv  ||0;
-
-    function cell(tt, kh, dec){
-      dec = dec||1;
-      if(!kh) return '<td class="tc na">—</td><td class="tc">'+(!tt?'—':tt.toFixed?tt.toFixed(dec):tt)+'</td><td class="tc na">—</td>';
-      var pct = kh?tt/kh*100:0;
-      var cls = pct>=100?'color:var(--green);font-weight:700':pct>=80?'color:var(--gold)':pct>0?'color:var(--red)':'color:var(--gray)';
-      return '<td class="tr">'+kh.toFixed(dec)+'</td>'
-            +'<td class="tr">'+(!tt?'<span class="na">—</span>':tt.toFixed(dec))+'</td>'
-            +'<td class="tc" style="'+cls+'">'+(!tt?'—':pct.toFixed(1)+'%')+'</td>';
-    }
-
-    var bg = i%2===0?'':'background:var(--alt)';
-    var active = !ACTIVE_CB || ACTIVE_CB[r.ma];
-    if(!active) bg = 'background:#FFEBEE;opacity:.6';
-
-    h += '<tr style="'+bg+'">'
-      +'<td class="tc" style="font-size:11px;color:var(--gray)">'+(i+1)+'</td>'
-      +'<td class="tc" style="font-size:11px;color:var(--gray)">'+r.ma+'</td>'
-      +'<td class="fw">'+r.ten+'</td>'
-      +'<td style="font-size:11px">'+r.phong+'</td>'
-      +'<td class="tc"><span class="badge '+(isLD(r)?'b-ld':'b-cb')+'">'+(isLD(r)?'👑':'👤')+'</span></td>'
-      + cell(dn_tt, dn_kh, 1)
-      + cell(hdv_tt, hdv_kh, 0)
-      + cell(tnt_tt, tnt_kh, 2)
-      + cell(dv_tt, dv_kh, 0)
-      + cell(kv_tt, kv_kh, 0)
-      +'</tr>';
-  });
-
-  // Dòng tổng
-  function totCell(tt, kh, dec){
-    dec=dec||1;
-    if(!kh) return '<td></td><td class="tr fw">'+tt.toFixed(dec)+'</td><td></td>';
-    var pct=tt/kh*100;
-    var cls=pct>=100?'color:var(--green)':pct>=80?'color:var(--gold)':'color:var(--red)';
-    return '<td class="tr fw">'+kh.toFixed(dec)+'</td>'
-          +'<td class="tr fw">'+tt.toFixed(dec)+'</td>'
-          +'<td class="tc fw" style="'+cls+'">'+pct.toFixed(1)+'%</td>';
-  }
-  h += '<tr class="avg-row"><td colspan="5" style="text-align:right;font-style:italic">📊 Tổng / TB '+qLabel+'</td>'
-    + totCell(actDN,totDN,1)
-    + totCell(actHDV,totHDV,0)
-    + totCell(actTNT,totTNT,2)
-    + totCell(actDV,totDV,0)
-    + totCell(actKV,totKV,0)
-    + '</tr>';
-  h += '</tbody>';
-  document.getElementById('tbl-kh').innerHTML = h;
-}
-
-function khQuickSort(key){
-  var sel = document.getElementById('kh-sort');
-  if(!sel) return;
-  var cur = sel.value;
-  // Nếu đang sort theo key này rồi → đổi chiều; nếu không → chọn key + giảm dần
-  if(cur === key){
-    khToggleDir();
-  } else {
-    sel.value = key;
-    khSortDir = -1;
-    var btn = document.getElementById('kh-dir-btn');
-    if(btn) btn.textContent = '↓';
-    renderKH();
-  }
 }
 
 function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
