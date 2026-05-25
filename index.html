@@ -394,10 +394,7 @@ canvas{max-height:260px}
         style="padding:4px 10px;font-size:13px;border:1px solid var(--border);border-radius:5px;background:#fff;cursor:pointer;line-height:1;font-weight:700;color:var(--teal-d)">
         ↓
       </button>
-      <label style="font-size:11px;display:flex;align-items:center;gap:4px">
-        <input type="checkbox" id="kh-active-only" onchange="renderKH()" style="accent-color:var(--teal)">
-        Chỉ CB được chọn
-      </label>
+
     </div>
   </div>
   <div class="kpi-grid" id="kpi-kh"></div>
@@ -2432,14 +2429,19 @@ function qlLoadSaved(){
   try{
     var s = localStorage.getItem('bidv_active_cb');
     if(!s) return;
-    // Kiểm tra version — nếu lưu trước khi cập nhật default thì reset
     var parsed = JSON.parse(s);
-    // Nếu số lượng khác DATA → reset về default mới
     if(parsed.length !== DATA.length){ localStorage.removeItem('bidv_active_cb'); return; }
-    qlInit();
-    parsed.forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
-    // Không render ở đây — caller (window.onload) sẽ render sau
-    console.log('QL: loaded saved selection, active='+getActive().length);
+    qlInit(); // set default off trước
+    var _off = ['157359','157271','157253','157257','150432','28268'];
+    parsed.forEach(function(item){
+      // _off list: LUÔN bỏ tích, không cho localStorage override
+      if(_off.indexOf(item.ma) !== -1){
+        ACTIVE_CB[item.ma] = false;
+      } else {
+        ACTIVE_CB[item.ma] = item.on;
+      }
+    });
+    console.log('QL: loaded, active='+getActive().length);
   }catch(e){ console.warn('qlLoadSaved err:',e); }
 }
 
@@ -2449,16 +2451,14 @@ function qlLoadSaved(){
 function renderKH(){
   var quy     = document.getElementById('kh-quy').value;     // q1/q2/q3/q4/nam
   var phong   = document.getElementById('kh-phong').value;
-  var actOnly = document.getElementById('kh-active-only').checked;
-
   var loai  = document.getElementById('kh-loai').value;
   var sort  = document.getElementById('kh-sort').value;
 
-  var rows = DATA.filter(function(r){
+  // Luôn dùng getActive() — chỉ hiển thị CB được chọn trong tab QL
+  var rows = getActive().filter(function(r){
     if(phong && r.phong !== phong) return false;
     if(loai === 'ld' && !isLD(r)) return false;
     if(loai === 'cb' &&  isLD(r)) return false;
-    if(actOnly && ACTIVE_CB && !ACTIVE_CB[r.ma]) return false;
     return true;
   });
 
