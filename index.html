@@ -1392,7 +1392,7 @@ function iBuildPreview() {
 
 function iApply() {
   if(!IMP.merged.length) return;
-  DATA=filterExclude(JSON.parse(JSON.stringify(IMP.merged))); ACTIVE_CB=null;
+  DATA=filterExclude(JSON.parse(JSON.stringify(IMP.merged))); ACTIVE_CB=null; qlInit();
   bieuRendered=false;
 
   // Update header
@@ -2087,7 +2087,11 @@ window.addEventListener('load', function() {
   var _savedDate = loadDate();
   if(_savedDate){ IMP.date = _savedDate; }
 
-  // 2. Render với SEED data ngay
+  // 2. Khởi tạo ACTIVE_CB trước khi render (để getActive() lọc đúng ngay từ đầu)
+  qlInit();        // set mặc định bỏ tích cho TP KHCN, 4 GĐ PGD, 157359
+  qlLoadSaved();   // ghi đè bằng lựa chọn đã lưu (nếu có)
+
+  // 3. Render với SEED data ngay (getActive() đã có giá trị đúng)
   renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
   document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
@@ -2095,10 +2099,9 @@ window.addEventListener('load', function() {
   document.getElementById('bench-info-ss').innerHTML=benchInfoHTML('phong');
   refreshDateDisplay(); // Hiển thị ngay ngày đã lưu
 
-  // 3. Load config
+  // 4. Load config
   loadGHConfig();
   loadSavedGSUrls();
-  qlLoadSaved();
   ['gs-url-1','gs-url-2','gs-url-3'].forEach(function(id,i){
     validateGSUrl(id,'gs-status-'+(i+1));
   });
@@ -2428,10 +2431,7 @@ function qlLoadSaved(){
     if(parsed.length !== DATA.length){ localStorage.removeItem('bidv_active_cb'); return; }
     qlInit();
     parsed.forEach(function(item){ ACTIVE_CB[item.ma] = item.on; });
-    // Áp dụng ngay vào render — không gọi qlApply để tránh loop
-    bieuRendered=false;
-    renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
-    refreshDateDisplay();
+    // Không render ở đây — caller (window.onload) sẽ render sau
     console.log('QL: loaded saved selection, active='+getActive().length);
   }catch(e){ console.warn('qlLoadSaved err:',e); }
 }
