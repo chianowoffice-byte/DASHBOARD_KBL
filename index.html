@@ -373,14 +373,21 @@ canvas{max-height:260px}
       <select id="kh-sort" onchange="renderKH()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:5px">
         <option value="phong">Sắp xếp: Theo Phòng</option>
         <option value="loai">Sắp xếp: Loại (LD trước)</option>
-        <option value="dn">Dư nợ thực tế</option>
-        <option value="hdv">Huy động vốn TT</option>
-        <option value="tnt">Thu nhập thuần TT</option>
-        <option value="kv">Số lượng KV</option>
-        <option value="pct_dn">% Hoàn thành DN</option>
-        <option value="pct_hdv">% Hoàn thành HĐV</option>
-        <option value="pct_tnt">% Hoàn thành TNT</option>
-        <option value="pct_kv">% Hoàn thành KV</option>
+        <option value="dn">TT Dư nợ</option>
+        <option value="kh_dn">KH Dư nợ</option>
+        <option value="hdv">TT HĐV</option>
+        <option value="kh_hdv">KH HĐV</option>
+        <option value="tnt">TT TNT</option>
+        <option value="kh_tnt">KH TNT</option>
+        <option value="dv">TT DV ròng</option>
+        <option value="kh_dv">KH DV ròng</option>
+        <option value="kv">TT SL KV</option>
+        <option value="kh_kv">KH SL KV</option>
+        <option value="pct_dn">%TH Dư nợ</option>
+        <option value="pct_hdv">%TH HĐV</option>
+        <option value="pct_tnt">%TH TNT</option>
+        <option value="pct_dv">%TH DV ròng</option>
+        <option value="pct_kv">%TH SL KV</option>
       </select>
       <button id="kh-dir-btn" onclick="khToggleDir()"
         title="Đổi chiều sắp xếp"
@@ -2498,6 +2505,19 @@ function renderKH(){
     rows.sort(function(a,b){ return (getPct(b,'tnt')-getPct(a,'tnt'))*D; });
   } else if(sort==='pct_kv'){
     rows.sort(function(a,b){ return (getPct(b,'kv')-getPct(a,'kv'))*D; });
+  } else if(sort==='pct_dv'){
+    rows.sort(function(a,b){ return (getPct(b,'dv')-getPct(a,'dv'))*D; });
+  } else if(sort==='dv'){
+    rows.sort(function(a,b){ return ((b.dv||0)-(a.dv||0))*D; });
+  } else if(sort && sort.indexOf('kh_')===0){
+    // Sort theo giá trị KH
+    var khField = sort.replace('kh_','');
+    rows.sort(function(a,b){
+      var sfxK = quy==='nam'?'_nam':'_'+quy;
+      var va = (KH[a.ma]||{})[khField+sfxK]||0;
+      var vb = (KH[b.ma]||{})[khField+sfxK]||0;
+      return (vb-va)*D;
+    });
   }
 
   // KPI tổng
@@ -2557,21 +2577,39 @@ function renderKH(){
   }
 
 
+  // Helper: th có thể click sort, hiện mũi tên nếu đang active
+  function thS(key, label, bg, fs){
+    var active = sort===key;
+    var arrow  = active?(khSortDir===-1?' ↓':' ↑'):'';
+    var style  = 'cursor:pointer;user-select:none;white-space:nowrap;'
+               +(bg?'background:'+bg+';':'')+(fs?'font-size:'+fs+';':'');
+    if(active) style+='color:var(--teal-d);font-weight:700;';
+    return '<th data-skey="'+key+'" onclick="khQuickSort(this.dataset.skey)"'
+          +' style="'+style+'">'+label+arrow+'</th>';
+  }
+
+  var colDefs = [
+    {key:'dn',   kh_key:'dn',  label:'Dư nợ (tỷ)',   bg:'#EBF8F7'},
+    {key:'hdv',  kh_key:'hdv', label:'HĐV (tỷ)',      bg:'#E8F5E9'},
+    {key:'tnt',  kh_key:'tnt', label:'TNT (tỷ)',      bg:'#FFF8E1'},
+    {key:'dv',   kh_key:'dv',  label:'DV ròng (tr)',  bg:'#EDE7F6'},
+    {key:'kv',   kh_key:'kv',  label:'SL KV',         bg:'#E3F2FD'},
+  ];
+
   var h = '<thead><tr>'
-    +'<th>#</th><th>Mã CB</th><th style="min-width:130px">Họ &amp; Tên</th>'
-    +'<th>Phòng</th><th>Loại</th>'
-    + thSort('dn','Dư nợ (tỷ)','#EBF8F7')+' <th colspan="2" style="background:#EBF8F7;font-size:11px">'+qLabel+'</th>'
-    + thSort('hdv','HĐV (tỷ)','#E8F5E9')+' <th colspan="2" style="background:#E8F5E9;font-size:11px">'+qLabel+'</th>'
-    + thSort('tnt','TNT (tỷ)','#FFF8E1')+' <th colspan="2" style="background:#FFF8E1;font-size:11px">'+qLabel+'</th>'
-    +'<th colspan="3" style="background:#EDE7F6;font-size:11px">DV ròng (tr) — '+qLabel+'</th>'
-    + thSort('kv','SL KV','#E3F2FD')+' <th colspan="2" style="background:#E3F2FD;font-size:11px">'+qLabel+'</th>'
-    +'</tr><tr>'
-    +'<th></th><th></th><th></th><th></th><th></th>';
-  ['dn','hdv','tnt',null,'kv'].forEach(function(key){
-    h += '<th style="font-size:10px;color:var(--gray)">KH</th>'
-      +'<th style="font-size:10px;color:var(--gray)">TT</th>';
-    if(key) h += thSortPct(key,'',null);
-    else h += '<th style="font-size:10px;color:var(--gray)">%TH</th>';
+    +'<th rowspan="2">#</th>'
+    +'<th rowspan="2" style="min-width:120px">Họ &amp; Tên</th>'
+    +'<th rowspan="2">Phòng</th>'
+    +'<th rowspan="2">Loại</th>';
+  colDefs.forEach(function(c){
+    h += '<th colspan="3" style="background:'+c.bg+';text-align:center;font-size:12px">'
+        +c.label+' — '+qLabel+'</th>';
+  });
+  h += '</tr><tr>';
+  colDefs.forEach(function(c){
+    h += thS('kh_'+c.key, 'KH', c.bg, '10px');
+    h += thS(c.key,       'TT', c.bg, '10px');
+    h += thS('pct_'+c.key,'%TH',c.bg, '10px');
   });
   h += '</tr></thead><tbody>';
 
@@ -2627,7 +2665,7 @@ function renderKH(){
           +'<td class="tr fw">'+tt.toFixed(dec)+'</td>'
           +'<td class="tc fw" style="'+cls+'">'+pct.toFixed(1)+'%</td>';
   }
-  h += '<tr class="avg-row"><td colspan="5" style="text-align:right;font-style:italic">📊 Tổng / TB '+qLabel+'</td>'
+  h += '<tr class="avg-row"><td colspan="4" style="text-align:right;font-style:italic">📊 Tổng / TB '+qLabel+'</td>'
     + totCell(actDN,totDN,1)
     + totCell(actHDV,totHDV,0)
     + totCell(actTNT,totTNT,2)
