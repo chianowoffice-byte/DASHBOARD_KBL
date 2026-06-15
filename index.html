@@ -2041,12 +2041,17 @@ async function fetchCSV(url) {
   // Strategy 1: Google Apps Script (no CORS, recommended)
   if (GAS_URL) {
     try {
-      var gr = await fetch(GAS_URL + '?sheetId=' + extractSheetId(url));
+      var shId = extractSheetId(url);
+      var gr = await fetch(GAS_URL + '?sheetId=' + shId);
       if (gr.ok) {
-        var gd = await gr.json();
-        if (gd.csv && gd.csv.trim()) return gd.csv;
+        var txt = await gr.text();
+        if (txt && txt.trim()) {
+          if (!txt.trim().startsWith('{')) return txt;
+          var gd = JSON.parse(txt);
+          if (gd.csv) return gd.csv;
+        }
       }
-    } catch(e) { console.warn('GAS failed:', e); }
+    } catch(e) { console.warn('GAS failed:', e.message); }
   }
 
   // Strategy 2: Direct fetch (public sheets)
@@ -2067,6 +2072,7 @@ async function fetchCSV(url) {
     if (r4.ok) { var t4=await r4.text(); if(t4.trim()) return t4; }
   } catch(e) {}
 
+  console.error('[fetchCSV] All strategies failed for URL:', url);
   throw new Error(
     'Khong ket noi duoc. Hay cai dat Google Apps Script: nhan nut [? Huong dan cai GAS] de biet cach.'
   );
