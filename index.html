@@ -2163,12 +2163,14 @@ window.addEventListener('load', function() {
   var _savedDate = loadDate();
   if(_savedDate){ IMP.date = _savedDate; }
 
-  // 2. Khởi tạo ACTIVE_CB trước khi render (để getActive() lọc đúng ngay từ đầu)
-  qlInit();        // set mặc định bỏ tích cho TP KHCN, 4 GĐ PGD, 157359
-  qlLoadSaved();   // ghi đè bằng lựa chọn đã lưu (nếu có)
+  // 2. Khởi tạo ACTIVE_CB trước khi render
+  qlInit();
+  qlLoadSaved();
+  console.log('[INIT] DATA='+DATA.length+' ACTIVE='+getActive().length+' ACTIVE_CB='+JSON.stringify(ACTIVE_CB).length);
 
-  // 3. Render với SEED data ngay (getActive() đã có giá trị đúng)
+  // 3. Render với SEED data ngay
   renderTQ(); renderLD(); renderCB(); renderKV(); renderSS();
+  console.log('[RENDER] done, getActive='+getActive().length);
   document.getElementById('bench-info-tq').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-ld').innerHTML=benchInfoHTML('phong');
   document.getElementById('bench-info-cb').innerHTML=benchInfoHTML('phong');
@@ -2360,9 +2362,10 @@ var ACTIVE_CB = null;
 
 // Trả về danh sách CB đang được chọn (dùng trong tất cả render fn)
 function getActive(){
-  if(!ACTIVE_CB) return DATA;
+  if(!ACTIVE_CB){ console.warn('[getActive] ACTIVE_CB null, returning DATA='+DATA.length); return DATA; }
   var result = DATA.filter(function(r){ return !!ACTIVE_CB[r.ma]; });
-  return result.length ? result : DATA; // fallback nếu chưa có lựa chọn
+  if(!result.length){ console.warn('[getActive] result empty! DATA='+DATA.length+' ACTIVE_CB keys='+Object.keys(ACTIVE_CB).length); return DATA; }
+  return result;
 }
 
 function qlInit(){
@@ -2978,7 +2981,7 @@ async function syncBSC(){
 }
 
 // ── Đồng bộ BSC từ tab Import ────────────────────────────────
-async async function importSyncBSC(){
+async function importSyncBSC(){
   var btn = document.getElementById('bsc-imp-sync-btn');
   var status = document.getElementById('bsc-imp-status');
   var result = document.getElementById('bsc-imp-result');
