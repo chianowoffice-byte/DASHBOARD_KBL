@@ -197,12 +197,12 @@ canvas{max-height:260px}
     <p>BIDV Chi nhánh Tràng Tiền – Hà Nội &nbsp;|&nbsp; KHCN + 4 PGD + P.GDKH</p>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span class="data-badge badge-live" id="src-badge" class="data-badge badge-import">📅 Dữ liệu: 14/06/2026</span>
+    <span class="data-badge badge-live" id="src-badge">📅 Dữ liệu gốc 15/05/2026</span>
     <div id="date-display" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:8px;padding:5px 14px;text-align:center">
       <div style="font-size:9px;opacity:.75;letter-spacing:.5px;text-transform:uppercase">Kỳ số liệu</div>
       <div id="date-display-val" style="font-size:16px;font-weight:900;letter-spacing:.5px">--/--/----</div>
     </div>
-    <span class="hdr-badge" id="period-badge">21 Cán bộ</span>
+    <span class="hdr-badge" id="period-badge">42 Cán bộ</span>
   </div>
 </div>
 
@@ -355,12 +355,7 @@ canvas{max-height:260px}
       <div style="font-size:13px;font-weight:700;color:var(--teal-d)">📋 Báo cáo BSC Khối Bán lẻ</div>
       <div id="bsc-ky" style="font-size:11px;color:var(--gray);margin-top:2px"></div>
     </div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <button onclick="syncBSC()" id="bsc-sync-btn"
-        style="font-size:11px;padding:5px 14px;border-radius:6px;border:none;background:var(--teal);color:#fff;cursor:pointer;font-weight:600">
-        🔄 Đồng bộ GSheet
-      </button>
-    </div>
+
   </div>
 
   <!-- ══ PHẦN 1: BSC KHỐI — Luôn hiện tất cả, chia 3 nhóm ══ -->
@@ -555,6 +550,14 @@ canvas{max-height:260px}
                 oninput="validateGSUrl('gs-url-3','gs-status-3')">
               <span id="gs-status-3" style="font-size:11px;width:60px;text-align:center"></span>
             </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:700;color:#2E7D32;width:180px;flex-shrink:0">📋 FILE BSC (KBL):</span>
+              <input id="gs-url-bsc" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1YZTpyrMbr8qCjsS8J2kOngR1rruP2QN0yxEd4qNOUns/edit"
+                style="flex:1;font-size:11px;padding:6px 10px;border:1px solid #A5D6A7;border-radius:5px"
+                onpaste="setTimeout(()=>validateGSUrl('gs-url-bsc','gs-status-bsc'),100)"
+                oninput="validateGSUrl('gs-url-bsc','gs-status-bsc')">
+              <span id="gs-status-bsc" style="font-size:11px;width:60px;text-align:center"></span>
+            </div>
           </div>
           <div style="background:#E8F5E9;border-radius:7px;padding:9px 12px;margin-bottom:10px;border-left:3px solid #2E7D32">
             <div style="font-size:11px;font-weight:700;color:#1B5E20;margin-bottom:5px">&#9889; Google Apps Script Web App URL (khuy��n dùng — không bị lỗi CORS):</div>
@@ -603,6 +606,10 @@ canvas{max-height:260px}
               style="background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer">
               🔄 Đồng bộ từ Google Sheet
             </button>
+            <button onclick="importSyncBSC()" id="bsc-imp-sync-btn"
+              style="background:#2E7D32;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer">
+              📋 Đồng bộ BSC
+            </button>
             <button onclick="saveGSUrls()" 
               style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;color:var(--gray)">
               💾 Lưu URL
@@ -612,6 +619,7 @@ canvas{max-height:260px}
               🗑 Xóa URL
             </button>
             <span id="gs-sync-status" style="font-size:11px;font-weight:700;color:var(--teal)"></span><span id="gs-save-status" style="font-size:11px;color:var(--gray);margin-left:6px"></span>
+            <span id="bsc-imp-status" style="font-size:11px;font-weight:700;margin-left:6px"></span>
           </div>
           <div id="gs-progress" style="display:none;margin-top:8px">
             <div style="background:var(--teal-m);border-radius:4px;height:6px;overflow:hidden">
@@ -620,6 +628,7 @@ canvas{max-height:260px}
             <p id="gs-prog-text" style="font-size:10px;color:var(--gray);margin-top:4px"></p>
           </div>
         </div>
+        <div id="bsc-imp-result" style="display:none;margin-top:10px;padding:8px 12px;background:#E8F5E9;border-radius:6px;font-size:11px;color:#333"></div>
       </div>
       <!-- SEPARATOR -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -719,7 +728,7 @@ canvas{max-height:260px}
 // ══════════════════════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════════════════════
-const SEED = [{"ma":"157271","ten":"Trần Thị Hằng","phong":"P. KHCN","chucvu":"Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":0.9,"hdv":34.9,"tnt":1.34,"dv":87,"nim":3.24,"nim_td":1.91,"nim_tt":null,"kv":15},{"ma":"157345","ten":"Nguyễn Công Thành","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":691.5,"hdv":656.8,"tnt":8.56,"dv":184,"nim":1.79,"nim_td":1,"nim_tt":null,"kv":102},{"ma":"157332","ten":"Nguyễn Thị Phương","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":397.9,"hdv":206.9,"tnt":3.5,"dv":98,"nim":2.75,"nim_td":1.53,"nim_tt":1.54,"kv":291},{"ma":"151417","ten":"Nguyễn Thị Thanh Nga","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":775.6,"hdv":534.2,"tnt":6.82,"dv":262,"nim":2.54,"nim_td":1.19,"nim_tt":1.2,"kv":212},{"ma":"157359","ten":"Nguyễn Việt Anh","phong":"P. KHCN","chucvu":"Phó Trưởng phòng Khách hàng cá nhân","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":null,"hdv":null,"tnt":null,"dv":null,"nim":null,"nim_td":null,"nim_tt":null,"kv":0},{"ma":"173264","ten":"Lê Thùy Linh","phong":"P. KHCN","chucvu":"Chuyên viên Khách hàng cá nhân cấp 2","loai":"Cán bộ","dn":139.8,"hdv":88.1,"tnt":2.03,"dv":98,"nim":3.52,"nim_td":1.22,"nim_tt":1.28,"kv":246},{"ma":"165874","ten":"Ninh Thu Hương","phong":"P. KHCN","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":414.5,"hdv":376.9,"tnt":3.34,"dv":202,"nim":1,"nim_td":1.17,"nim_tt":1.22,"kv":184},{"ma":"157253","ten":"Cao Thanh Thủy","phong":"PGD Lương Định Của","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":0,"hdv":110,"tnt":1.15,"dv":149,"nim":2.06,"nim_td":2.55,"nim_tt":2.55,"kv":18},{"ma":"36691","ten":"Phạm Thị Tuyết Mai","phong":"PGD Lương Định Của","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":744.1,"hdv":820.6,"tnt":6.71,"dv":207,"nim":1.79,"nim_td":1.33,"nim_tt":1.33,"kv":211},{"ma":"178446","ten":"Phan Đức Trung","phong":"PGD Lương Định Của","chucvu":"Chuyên viên Khách hàng cá nhân cấp 2","loai":"Cán bộ","dn":148.6,"hdv":173.4,"tnt":1.39,"dv":40,"nim":2.4,"nim_td":1.35,"nim_tt":1.36,"kv":103},{"ma":"157252","ten":"Vũ Hoài Phương","phong":"PGD Lương Định Của","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":477.7,"hdv":406.7,"tnt":3.97,"dv":85,"nim":2.48,"nim_td":1.27,"nim_tt":1.28,"kv":160},{"ma":"157257","ten":"Vũ Thị Ngọc Ánh","phong":"PGD Nam Cao","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":1,"hdv":23.6,"tnt":0.02,"dv":1,"nim":2.71,"nim_td":3.39,"nim_tt":null,"kv":4},{"ma":"153545","ten":"Nguyễn Thị Ngọc Diệp","phong":"PGD Nam Cao","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":682,"hdv":828.2,"tnt":7.57,"dv":148,"nim":1.4,"nim_td":1.13,"nim_tt":1.19,"kv":213},{"ma":"158495","ten":"Nguyễn Trung Hiếu","phong":"PGD Nam Cao","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 2","loai":"Cán bộ","dn":505,"hdv":455.5,"tnt":4.57,"dv":357,"nim":3.65,"nim_td":1.15,"nim_tt":1.16,"kv":227},{"ma":"150432","ten":"Tống Xuân Trường","phong":"PGD Hào Nam","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":1.2,"hdv":240.1,"tnt":3.35,"dv":439,"nim":2.05,"nim_td":1.73,"nim_tt":1.8,"kv":34},{"ma":"149031","ten":"Trần Văn Long","phong":"PGD Hào Nam","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":501.3,"hdv":561.9,"tnt":6.37,"dv":78,"nim":2.35,"nim_td":1.47,"nim_tt":1.47,"kv":144},{"ma":"145318","ten":"Tạ Thị Vân","phong":"PGD Hào Nam","chucvu":"Chuyên viên Khách hàng ưu tiên cấp 4","loai":"Cán bộ","dn":463.4,"hdv":457.6,"tnt":6.24,"dv":250,"nim":1.53,"nim_td":1.41,"nim_tt":1.44,"kv":327},{"ma":"28268","ten":"Nguyễn Thị Thái Hà","phong":"PGD West Lake","chucvu":"Giám đốc Phòng giao dịch","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":3.8,"hdv":411.7,"tnt":4.59,"dv":114,"nim":2.38,"nim_td":1.78,"nim_tt":1.78,"kv":4},{"ma":"145344","ten":"Bùi Phương Anh","phong":"PGD West Lake","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":811.5,"hdv":905,"tnt":10.52,"dv":190,"nim":2.25,"nim_td":1.3,"nim_tt":1.32,"kv":193},{"ma":"164065","ten":"Dương Thanh Tùng","phong":"PGD West Lake","chucvu":"Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh","loai":"Lãnh đạo (TP/PTP/GĐ/PGĐ)","dn":294.9,"hdv":272.2,"tnt":3.27,"dv":104,"nim":3.55,"nim_td":1.24,"nim_tt":1.28,"kv":128},{"ma":"182410","ten":"Nguyễn Văn Thắng","phong":"PGD West Lake","chucvu":"Chuyên viên khách hàng hỗn hợp cấp 1","loai":"Cán bộ","dn":171.4,"hdv":184,"tnt":1.98,"dv":96,"nim":1.16,"nim_td":1.49,"nim_tt":1.5,"kv":121}];
+const SEED = [{"ma": "157345", "ten": "Nguyễn Công Thành", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 677.7, "hdv": 659.4, "tnt": 6.69, "dv": 137.0, "nim": 1.75, "nim_td": 0.93, "kv": 102, "nim_tt": 0.95}, {"ma": "157332", "ten": "Nguyễn Thị Phương", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 370.0, "hdv": 159.6, "tnt": 2.75, "dv": 86.0, "nim": 2.75, "nim_td": 1.52, "kv": 297, "nim_tt": 1.53}, {"ma": "151417", "ten": "Nguyễn Thị Thanh Nga", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 708.9, "hdv": 445.0, "tnt": 5.45, "dv": 187.0, "nim": 2.53, "nim_td": 1.14, "kv": 209, "nim_tt": 1.16}, {"ma": "157271", "ten": "Trần Thị Hằng", "phong": "P. KHCN", "chucvu": "Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 1.1, "hdv": 85.0, "tnt": 1.2, "dv": 75.0, "nim": 3.24, "nim_td": 1.73, "nim_tt": -4.61, "kv": 15}, {"ma": "157359", "ten": "Nguyễn Việt Anh", "phong": "P. KHCN", "chucvu": "Phó Trưởng phòng Khách hàng cá nhân", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": null, "hdv": null, "tnt": null, "dv": null, "nim": null, "nim_td": null, "nim_tt": null, "kv": 0}, {"ma": "173264", "ten": "Lê Thùy Linh", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 191.8, "hdv": 90.1, "tnt": 1.65, "dv": 84.0, "nim": 2.91, "nim_td": 1.2, "kv": 249, "nim_tt": 1.26}, {"ma": "165874", "ten": "Ninh Thu Hương", "phong": "P. KHCN", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 302.1, "hdv": 291.7, "tnt": 2.69, "dv": 168.0, "nim": 1.0, "nim_td": 1.14, "kv": 181, "nim_tt": 1.2}, {"ma": "36691", "ten": "Phạm Thị Tuyết Mai", "phong": "PGD Lương Định Của", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 656.3, "hdv": 725.0, "tnt": 5.25, "dv": 163.0, "nim": 1.78, "nim_td": 1.26, "kv": 214, "nim_tt": 1.27}, {"ma": "157253", "ten": "Cao Thanh Thủy", "phong": "PGD Lương Định Của", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 54.3, "tnt": 1.02, "dv": 117.0, "nim": 2.04, "nim_td": 2.55, "nim_tt": 2.55, "kv": 21}, {"ma": "178446", "ten": "Phan Đức Trung", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 2", "loai": "Cán bộ", "dn": 65.9, "hdv": 140.9, "tnt": 1.04, "dv": 9.0, "nim": 1.3, "nim_td": 1.28, "kv": 94, "nim_tt": 1.29}, {"ma": "157252", "ten": "Vũ Hoài Phương", "phong": "PGD Lương Định Của", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 404.7, "hdv": 318.2, "tnt": 3.12, "dv": 70.0, "nim": 1.18, "nim_td": 1.22, "kv": 343, "nim_tt": 1.22}, {"ma": "153545", "ten": "Nguyễn Thị Ngọc Diệp", "phong": "PGD Nam Cao", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 537.5, "hdv": 640.4, "tnt": 6.08, "dv": 99.0, "nim": 1.19, "nim_td": -1.57, "kv": 210, "nim_tt": -1.54}, {"ma": "157257", "ten": "Vũ Thị Ngọc Ánh", "phong": "PGD Nam Cao", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 0.0, "hdv": 0.0, "tnt": 0.0, "dv": 0.0, "nim": 3.85, "nim_td": 3.8, "nim_tt": 3.8, "kv": 1}, {"ma": "158495", "ten": "Nguyễn Trung Hiếu", "phong": "PGD Nam Cao", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 2", "loai": "Cán bộ", "dn": 448.7, "hdv": 350.1, "tnt": 3.66, "dv": 297.0, "nim": 2.36, "nim_td": 1.13, "kv": 348, "nim_tt": 1.13}, {"ma": "149031", "ten": "Trần Văn Long", "phong": "PGD Hào Nam", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 473.3, "hdv": 552.0, "tnt": 5.04, "dv": 63.0, "nim": 2.55, "nim_td": 1.38, "kv": 145, "nim_tt": 1.38}, {"ma": "150432", "ten": "Tống Xuân Trường", "phong": "PGD Hào Nam", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 5.1, "hdv": 265.3, "tnt": 2.88, "dv": 387.0, "nim": 2.1, "nim_td": 1.49, "nim_tt": 1.55, "kv": 34}, {"ma": "145318", "ten": "Tạ Thị Vân", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng ưu tiên cấp 4", "loai": "Cán bộ", "dn": 465.1, "hdv": 379.4, "tnt": 5.15, "dv": 217.0, "nim": 1.7, "nim_td": 1.36, "kv": 337, "nim_tt": 1.39}, {"ma": "180168", "ten": "Bùi Mạnh Thắng", "phong": "PGD Hào Nam", "chucvu": "Chuyên viên Khách hàng cá nhân cấp 1", "loai": "Cán bộ", "dn": 279.1, "hdv": 120.9, "tnt": 2.53, "dv": 143.0, "nim": 2.82, "nim_td": 1.41, "kv": 120, "nim_tt": 1.43}, {"ma": "145344", "ten": "Bùi Phương Anh", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 687.2, "hdv": 771.2, "tnt": 8.31, "dv": 146.0, "nim": 2.24, "nim_td": 1.21, "kv": 189, "nim_tt": 1.23}, {"ma": "164065", "ten": "Dương Thanh Tùng", "phong": "PGD West Lake", "chucvu": "Phó Giám đốc Phòng Giao dịch phụ trách kinh doanh", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 214.6, "hdv": 200.8, "tnt": 2.73, "dv": 92.0, "nim": 2.81, "nim_td": 1.67, "kv": 125, "nim_tt": 1.68}, {"ma": "28268", "ten": "Nguyễn Thị Thái Hà", "phong": "PGD West Lake", "chucvu": "Giám đốc Phòng giao dịch", "loai": "Lãnh đạo (TP/PTP/GĐ/PGĐ)", "dn": 3.8, "hdv": 458.7, "tnt": 3.69, "dv": 99.0, "nim": 2.25, "nim_td": 1.68, "nim_tt": 1.68, "kv": 23}, {"ma": "182410", "ten": "Nguyễn Văn Thắng", "phong": "PGD West Lake", "chucvu": "Chuyên viên khách hàng hỗn hợp cấp 1", "loai": "Cán bộ", "dn": 115.5, "hdv": 134.7, "tnt": 1.63, "dv": 77.0, "nim": 0.58, "nim_td": 1.43, "kv": 113, "nim_tt": 1.44}];
 
 
 const EXCLUDE_CV = ['giao dịch viên', 'chuyên viên ngân hàng đa năng', 'phó giám đốc phòng giao dịch phụ trách tác nghiệp'];
@@ -2962,23 +2971,80 @@ function renderBSCDonVi(){
 }
 
 async function syncBSC(){
-  var btn = document.getElementById('bsc-sync-btn');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Đang tải...';}
+  // Gọi trực tiếp importSyncBSC để dùng chung logic
+  await importSyncBSC();
+  // Luôn render lại BSC sau khi sync
+  renderBSC();
+}
+
+// ── Đồng bộ BSC từ tab Import ────────────────────────────────
+async function importSyncBSC(){
+  var btn = document.getElementById('bsc-imp-sync-btn');
+  var status = document.getElementById('bsc-imp-status');
+  var result = document.getElementById('bsc-imp-result');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Đang đồng bộ...'; }
+  if(status) status.textContent = '';
+  if(result){ result.style.display='none'; result.innerHTML=''; }
+
   var gasUrl = getGASUrl();
   if(!gasUrl){
-    alert('Chưa cấu hình GAS URL trong tab Import.');
-    if(btn){btn.disabled=false;btn.textContent='🔄 Đồng bộ GSheet';}
+    if(status){ status.textContent='⚠️ Chưa cấu hình GAS URL'; status.style.color='var(--red)'; }
+    if(btn){ btn.disabled=false; btn.textContent='📋 Đồng bộ dữ liệu BSC'; }
     return;
   }
+
   try{
-    var r = await fetch(gasUrl+'?action=bsc');
-    if(r.ok){
-      var d = await r.json();
-      if(d.bsc){ Object.assign(BSC_DATA,d.bsc); document.getElementById('bsc-src-note').textContent='Từ GSheet — '+(BSC_DATA.capNhat||''); renderBSC(); }
-      else alert('GAS chưa hỗ trợ action=bsc.');
+    var r = await fetch(gasUrl + '?action=bsc');
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+
+    if(d.ok && d.bsc){
+      // Cập nhật BSC_DATA
+      Object.assign(BSC_DATA, d.bsc);
+
+      // Cập nhật src-note trong tab BSC
+      var note = document.getElementById('bsc-src-note');
+      if(note) note.textContent = '✅ Từ Google Sheet — ' + (BSC_DATA.capNhat||'');
+
+      // Re-render tab BSC nếu đang active
+      if(document.getElementById('tab-bsc') &&
+         document.getElementById('tab-bsc').style.display !== 'none'){
+        renderBSC();
+      }
+
+      // Hiện kết quả
+      var khoiCount = d.bsc.khoi ? d.bsc.khoi.length : 0;
+      var dvCount   = d.bsc.donVi ? d.bsc.donVi.length : 0;
+      var dvNames   = d.bsc.donVi ? d.bsc.donVi.map(function(dv){return dv.phong;}).join(', ') : '';
+
+      if(status){
+        status.textContent = '✅ Thành công';
+        status.style.color = 'var(--green)';
+      }
+      if(result){
+        result.style.display = 'block';
+        result.innerHTML =
+          '<b style="color:var(--green)">✅ Đồng bộ BSC thành công!</b><br>'
+          + '📊 Khối Bán Lẻ: <b>'+khoiCount+' chỉ tiêu</b>'
+          + (d.bsc.capNhat ? ' | Kỳ: <b>'+d.bsc.capNhat+'</b>' : '') + '<br>'
+          + '🏢 Đơn vị: <b>'+dvCount+' phòng</b>'
+          + (dvNames ? '<br><span style="color:var(--gray)">'+dvNames+'</span>' : '')
+          + '<br><span style="font-size:10px;color:var(--gray);margin-top:4px;display:block">'
+          + '→ Vào tab 📋 BSC để xem báo cáo</span>';
+      }
+    } else {
+      var errMsg = d.error || 'GAS chưa hỗ trợ action=bsc — cần cập nhật GAS code';
+      if(status){ status.textContent = '❌ ' + errMsg; status.style.color='var(--red)'; }
+      if(result){
+        result.style.display='block';
+        result.innerHTML = '<b style="color:var(--red)">❌ Lỗi: </b>' + errMsg
+          + '<br><span style="font-size:10px;color:var(--gray)">Kiểm tra GAS code đã được deploy với action=bsc chưa.</span>';
+      }
     }
-  }catch(e){ alert('Lỗi: '+e.message); }
-  if(btn){btn.disabled=false;btn.textContent='🔄 Đồng bộ GSheet';}
+  } catch(e){
+    if(status){ status.textContent='❌ Lỗi mạng: '+e.message; status.style.color='var(--red)'; }
+  }
+  if(btn){ btn.disabled=false; btn.textContent='📋 Đồng bộ dữ liệu BSC'; }
 }
 
 function showGASGuide(){ document.getElementById('gas-modal').style.display='block'; }
