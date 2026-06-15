@@ -2051,7 +2051,9 @@ async function fetchCSV(url) {
           if (gd.csv) return gd.csv;
         }
       }
-    } catch(e) { console.warn('GAS failed:', e.message); }
+    } catch(e) {
+      console.warn('[fetchCSV] Strategy 1 (GAS) failed:', e.message, 'URL:', GAS_URL);
+    }
   }
 
   // Strategy 2: Direct fetch (public sheets)
@@ -2072,10 +2074,13 @@ async function fetchCSV(url) {
     if (r4.ok) { var t4=await r4.text(); if(t4.trim()) return t4; }
   } catch(e) {}
 
-  console.error('[fetchCSV] All strategies failed for URL:', url);
-  throw new Error(
-    'Khong ket noi duoc. Hay cai dat Google Apps Script: nhan nut [? Huong dan cai GAS] de biet cach.'
-  );
+  var gasEl2 = document.getElementById('gs-gas-url');
+  var gasOk = gasEl2 && gasEl2.value.trim();
+  console.error('[fetchCSV] All strategies failed for:', url, 'GAS_URL:', gasOk ? 'set' : 'EMPTY');
+  if(!gasOk){
+    throw new Error('Khong ket noi duoc. Hay cai dat Google Apps Script: nhan nut [? Huong dan cai GAS] de biet cach.');
+  }
+  throw new Error('GAS tra ve loi khi doc file. Kiem tra: 1) GAS da duoc deploy "Anyone" chua? 2) Chay testDoGet() trong GAS editor xem co loi khong.');
 }
 async function syncGoogleSheets() {
   var btn = document.getElementById('gs-sync-btn');
