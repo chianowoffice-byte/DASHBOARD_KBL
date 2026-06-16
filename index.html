@@ -2323,8 +2323,8 @@ async function autoDeployToGitHub(){
   try{
     token = localStorage.getItem('bidv_gh_token')
          || (document.getElementById('gh-token') ? document.getElementById('gh-token').value : '')
-         || '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';
-  }catch(e){ token='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'; }
+         || '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';
+  }catch(e){ token='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'; }
   if(!token) return;
 
   var repo = '';
