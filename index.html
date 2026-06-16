@@ -2358,7 +2358,23 @@ async function autoDeployToGitHub(){
     var newSeed = 'const SEED = ' + JSON.stringify(DATA) + ';';
     html = html.replace(/const SEED = \[[\s\S]*?\];/, newSeed);
 
-    // Bước 3: Nhúng BSC_DATA mới (nếu đã sync)
+    // Bước 3: Sync BSC mới nhất từ GAS (luôn làm trước khi push)
+    try{
+      var gasUrl = getGASUrl();
+      if(gasUrl){
+        if(prog) prog.textContent = '⏳ Đang sync BSC...';
+        var bscR = await fetch(gasUrl + '?action=bsc');
+        if(bscR.ok){
+          var bscD = await bscR.json();
+          if(bscD.ok && bscD.bsc && bscD.bsc.khoi && bscD.bsc.khoi.length > 0){
+            Object.assign(BSC_DATA, bscD.bsc);
+            console.log('[deploy] BSC synced:', BSC_DATA.khoi.length, 'khoi items');
+          }
+        }
+      }
+    } catch(be){ console.warn('[deploy] BSC sync failed:', be.message); }
+
+    // Nhúng BSC_DATA mới nhất
     if(BSC_DATA && BSC_DATA.khoi && BSC_DATA.khoi.length > 0){
       var NL       = '\n';
       var bscJson  = JSON.stringify(BSC_DATA).replace(/<\/script>/gi, '<\\/script>');
