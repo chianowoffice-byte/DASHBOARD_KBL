@@ -3015,9 +3015,10 @@ function bscTc(pct){
 function fmtV(v, don){
   if(v===null||v===undefined) return '—';
   if(don==='%') return v.toFixed(2)+'%';
-  if(v>=1000) return (v/1000).toFixed(1)+'k';
-  if(v>=100)  return Math.round(v)+'';
-  return (v%1===0)?v+'':v.toFixed(1);
+  if(don==='KH'||don==='thẻ') return Math.round(v)+''; // số người/thẻ: nguyên
+  if(v>=100)  return Math.round(v)+'';                 // tỷ lớn: nguyên
+  if(v>=10)   return v.toFixed(1);                     // tỷ trung: 1 chữ số
+  return (v%1===0)?v+'':v.toFixed(2);                  // tỷ nhỏ: 2 chữ số
 }
 
 function bscSetDV(btn){
