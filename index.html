@@ -2320,48 +2320,88 @@ async function pushToGitHub(htmlContent){
 // Gọi từ iApply sau khi save GAS
 async function autoDeployToGitHub(){
   var token = '';
-  try{ token = localStorage.getItem('bidv_gh_token')||''; }catch(e){}
+  try{
+    token = localStorage.getItem('bidv_gh_token')
+         || (document.getElementById('gh-token') ? document.getElementById('gh-token').value : '')
+         || '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';
+  }catch(e){ token='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'; }
   if(!token) return;
 
+  var repo = '';
+  try{
+    repo = localStorage.getItem('bidv_gh_repo')
+        || (document.getElementById('gh-repo') ? document.getElementById('gh-repo').value : '')
+        || 'chianowoffice-byte/DASHBOARD_KBL';
+  }catch(e){ repo='chianowoffice-byte/DASHBOARD_KBL'; }
+
   var prog = document.getElementById('pdf-prog');
-  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Đang push lên GitHub...'; }
+  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Đang tải file từ GitHub...'; }
 
   try{
-    var r = await fetch(window.location.href);
-    var html = await r.text();
+    // Bước 1: Fetch file gốc từ GitHub API (không dùng outerHTML để tránh DOM mutation)
+    var apiBase = 'https://api.github.com/repos/' + repo + '/contents/index.html';
+    var getResp = await fetch(apiBase, {
+      headers:{ 'Authorization':'token '+token, 'Accept':'application/vnd.github.v3+json' }
+    });
+    if(!getResp.ok) throw new Error('Không lấy được file từ GitHub: ' + getResp.status);
+    var fileData = await getResp.json();
+    var sha = fileData.sha || '';
 
-    // 1. Nhúc SEED mới (đữ liệu CB)
+    // Decode base64 → HTML string gốc
+    var b64raw = fileData.content.replace(/\n/g,'');
+    var htmlBytes = atob(b64raw);
+    var html = decodeURIComponent(escape(htmlBytes));
+
+    if(prog) prog.textContent = '⏳ Đang cập nhật dữ liệu...';
+
+    // Bước 2: Nhúng SEED mới
     var newSeed = 'const SEED = ' + JSON.stringify(DATA) + ';';
     html = html.replace(/const SEED = \[[\s\S]*?\];/, newSeed);
 
-    // 2. Nhúng BSC_DATA mới (dùng marker cố định @@BSC_DATA_BEGIN@@ / @@BSC_DATA_END@@)
+    // Bước 3: Nhúng BSC_DATA mới (nếu đã sync)
     if(BSC_DATA && BSC_DATA.khoi && BSC_DATA.khoi.length > 0){
-      var NL = String.fromCharCode(10);
-      var bscJson = JSON.stringify(BSC_DATA).replace(/<\/script>/gi, '<\\/script>');
-      var bscNew  = '// @@BSC_DATA_BEGIN@@
-var BSC_DATA = {"kyBaoCao":"","capNhat":"","khoi":[{"nhom":"quymo","ten":"HĐV cuối kỳ BL","don":"tỷ","kh":7.7,"thucTe":7.3,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"quymo","ten":"HĐV KKH bình quân","don":"tỷ","kh":7.7,"thucTe":6.6,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"quymo","ten":"Dư nợ TDBL cuối kỳ","don":"tỷ","kh":7.6,"thucTe":7.6,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"quymo","ten":"Dư nợ TDH cuối kỳ","don":"tỷ","kh":4.2,"thucTe":3.8,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"hieuqua","ten":"Thu dịch vụ ròng","don":"tỷ","kh":9.9,"thucTe":9.7,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"hieuqua","ten":"Thu nhập ròng từ HĐ","don":"tỷ","kh":96.9,"thucTe":89.7,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"hieuqua","ten":"DT BH BML bán mới","don":"tr","kh":1660,"thucTe":748,"khLabel":"KH Q2","vung":"▲","note":""},{"nhom":"nenkh","ten":"Thẻ TD mới có PSGD","don":"thẻ","kh":861,"thucTe":995,"khLabel":"KH Q2","vung":"▲","note":""},{"nhom":"nenkh","ten":"SL KH SMB có PSGD","don":"KH","kh":2500,"thucTe":1152,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"nenkh","ten":"SL KH CC lũy kế","don":"KH","kh":1271,"thucTe":2163,"khLabel":"KH Q2","vung":"▲","note":""},{"nhom":"nenkh","ten":"SL KH vay","don":"KH","kh":2681,"thucTe":2291,"khLabel":"KH Q2","vung":"▼","note":""},{"nhom":"quymo","ten":"CASA (Tỷ trọng KKH BQ)","don":"%","kh":null,"thucTe":569,"khLabel":"KH Q2","vung":"▲","note":""}],"donVi":[{"phong":"P. KHCN","chiTieu":[{"nhom":"quymo","ten":"HĐV cuối kỳ","don":"tỷ","kh":2.05,"thucTe":1.9},{"nhom":"quymo","ten":"Dư nợ TDBL cuối kỳ","don":"tỷ","kh":2.49,"thucTe":2.42},{"nhom":"quymo","ten":"Dư nợ TDH cuối kỳ","don":"tỷ","kh":1.38,"thucTe":1.34},{"nhom":"quymo","ten":"HĐV KKH bình quân","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"CASA (Tỷ lệ KKH BQ)","don":"%","kh":720,"thucTe":534},{"nhom":"hieuqua","ten":"Thu nhập ròng từ HĐ","don":"tỷ","kh":27.7,"thucTe":24.3},{"nhom":"hieuqua","ten":"Thu dịch vụ ròng","don":"tỷ","kh":2.36,"thucTe":0.87},{"nhom":"hieuqua","ten":"Thu KDNT","don":"tr","kh":430,"thucTe":14},{"nhom":"hieuqua","ten":"DT BH BML bán mới","don":"tr","kh":738,"thucTe":0},{"nhom":"hieuqua","ten":"Thu dịch vụ BIC","don":"tr","kh":384,"thucTe":0},{"nhom":"nenkh","ten":"SL KH SMB có PSGD","don":"KH","kh":714,"thucTe":292},{"nhom":"nenkh","ten":"SL KH CC lũy kế","don":"KH","kh":363,"thucTe":462},{"nhom":"nenkh","ten":"Thẻ TD mới có PSGD","don":"thẻ","kh":246,"thucTe":269},{"nhom":"nenkh","ten":"SL KH vay","don":"KH","kh":766,"thucTe":689}]},{"phong":"PGD Lương Định Của","chiTieu":[{"nhom":"quymo","ten":"HĐV cuối kỳ","don":"tỷ","kh":1.32,"thucTe":1.38},{"nhom":"quymo","ten":"Dư nợ TDBL cuối kỳ","don":"tỷ","kh":1.3,"thucTe":1.37},{"nhom":"quymo","ten":"Dư nợ TDH cuối kỳ","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"HĐV KKH bình quân","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"CASA (Tỷ lệ KKH BQ)","don":"%","kh":593,"thucTe":445},{"nhom":"hieuqua","ten":"Thu nhập ròng từ HĐ","don":"tỷ","kh":16.3,"thucTe":12.28},{"nhom":"hieuqua","ten":"Thu dịch vụ ròng","don":"tỷ","kh":1.82,"thucTe":0.61},{"nhom":"hieuqua","ten":"Thu KDNT","don":"tr","kh":260,"thucTe":109},{"nhom":"hieuqua","ten":"DT BH BML bán mới","don":"tr","kh":449,"thucTe":0},{"nhom":"hieuqua","ten":"Thu dịch vụ BIC","don":"tr","kh":166,"thucTe":0},{"nhom":"nenkh","ten":"SL KH SMB có PSGD","don":"KH","kh":477,"thucTe":163},{"nhom":"nenkh","ten":"SL KH CC lũy kế","don":"KH","kh":242,"thucTe":329},{"nhom":"nenkh","ten":"Thẻ TD mới có PSGD","don":"thẻ","kh":164,"thucTe":114},{"nhom":"nenkh","ten":"SL KH vay","don":"KH","kh":511,"thucTe":383}]},{"phong":"PGD Nam Cao","chiTieu":[{"nhom":"quymo","ten":"HĐV cuối kỳ","don":"tỷ","kh":1.42,"thucTe":1.26},{"nhom":"quymo","ten":"Dư nợ TDBL cuối kỳ","don":"tỷ","kh":1.12,"thucTe":1.19},{"nhom":"quymo","ten":"Dư nợ TDH cuối kỳ","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"HĐV KKH bình quân","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"CASA (Tỷ lệ KKH BQ)","don":"%","kh":6.77,"thucTe":482},{"nhom":"hieuqua","ten":"Thu nhập ròng từ HĐ","don":"tỷ","kh":16.2,"thucTe":12.78},{"nhom":"hieuqua","ten":"Thu dịch vụ ròng","don":"tỷ","kh":1.59,"thucTe":0.43},{"nhom":"hieuqua","ten":"Thu KDNT","don":"tr","kh":220,"thucTe":357},{"nhom":"hieuqua","ten":"DT BH BML bán mới","don":"tr","kh":374,"thucTe":0},{"nhom":"hieuqua","ten":"Thu dịch vụ BIC","don":"tr","kh":138,"thucTe":0},{"nhom":"nenkh","ten":"SL KH SMB có PSGD","don":"KH","kh":375,"thucTe":130},{"nhom":"nenkh","ten":"SL KH CC lũy kế","don":"KH","kh":182,"thucTe":379},{"nhom":"nenkh","ten":"Thẻ TD mới có PSGD","don":"thẻ","kh":123,"thucTe":136},{"nhom":"nenkh","ten":"SL KH vay","don":"KH","kh":383,"thucTe":426}]},{"phong":"PGD Hào Nam","chiTieu":[{"nhom":"quymo","ten":"HĐV cuối kỳ","don":"tỷ","kh":1.5,"thucTe":1.36},{"nhom":"quymo","ten":"Dư nợ TDBL cuối kỳ","don":"tỷ","kh":1.35,"thucTe":1.32},{"nhom":"quymo","ten":"Dư nợ TDH cuối kỳ","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"HĐV KKH bình quân","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"CASA (Tỷ lệ KKH BQ)","don":"%","kh":1130,"thucTe":1211},{"nhom":"hieuqua","ten":"Thu nhập ròng từ HĐ","don":"tỷ","kh":18.7,"thucTe":18.27},{"nhom":"hieuqua","ten":"Thu dịch vụ ròng","don":"tỷ","kh":1.93,"thucTe":0},{"nhom":"hieuqua","ten":"Thu KDNT","don":"tr","kh":280,"thucTe":132},{"nhom":"hieuqua","ten":"DT BH BML bán mới","don":"tr","kh":483,"thucTe":0},{"nhom":"hieuqua","ten":"Thu dịch vụ BIC","don":"tr","kh":178,"thucTe":0},{"nhom":"nenkh","ten":"SL KH SMB có PSGD","don":"KH","kh":476,"thucTe":245},{"nhom":"nenkh","ten":"SL KH CC lũy kế","don":"KH","kh":242,"thucTe":599},{"nhom":"nenkh","ten":"Thẻ TD mới có PSGD","don":"thẻ","kh":164,"thucTe":256},{"nhom":"nenkh","ten":"SL KH vay","don":"KH","kh":511,"thucTe":555}]},{"phong":"PGD West Lake","chiTieu":[{"nhom":"quymo","ten":"HĐV cuối kỳ","don":"tỷ","kh":1.44,"thucTe":1.38},{"nhom":"quymo","ten":"Dư nợ TDBL cuối kỳ","don":"tỷ","kh":1.35,"thucTe":1.28},{"nhom":"quymo","ten":"Dư nợ TDH cuối kỳ","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"HĐV KKH bình quân","don":"tỷ","kh":0,"thucTe":0},{"nhom":"quymo","ten":"CASA (Tỷ lệ KKH BQ)","don":"%","kh":1628,"thucTe":1529},{"nhom":"hieuqua","ten":"Thu nhập ròng từ HĐ","don":"tỷ","kh":18,"thucTe":15.68},{"nhom":"hieuqua","ten":"Thu dịch vụ ròng","don":"tỷ","kh":2.16,"thucTe":0.46},{"nhom":"hieuqua","ten":"Thu KDNT","don":"tr","kh":320,"thucTe":10},{"nhom":"hieuqua","ten":"DT BH BML bán mới","don":"tr","kh":553,"thucTe":0},{"nhom":"hieuqua","ten":"Thu dịch vụ BIC","don":"tr","kh":204,"thucTe":0},{"nhom":"nenkh","ten":"SL KH SMB có PSGD","don":"KH","kh":476,"thucTe":138},{"nhom":"nenkh","ten":"SL KH CC lũy kế","don":"KH","kh":242,"thucTe":296},{"nhom":"nenkh","ten":"Thẻ TD mới có PSGD","don":"thẻ","kh":164,"thucTe":138},{"nhom":"nenkh","ten":"SL KH vay","don":"KH","kh":511,"thucTe":407}]}]};
-// @@BSC_DATA_END@@';
-      var bscRe   = /\/\/ @@BSC_DATA_BEGIN@@[\s\S]*?\/\/ @@BSC_DATA_END@@/;
-      if(bscRe.test(html)){ html = html.replace(bscRe, bscNew); }
+      var NL       = '\n';
+      var bscJson  = JSON.stringify(BSC_DATA).replace(/<\/script>/gi, '<\\/script>');
+      var bscBlock = '// @@BSC_DATA_BEGIN@@' + NL + 'var BSC_DATA = ' + bscJson + ';' + NL + '// @@BSC_DATA_END@@';
+      var bscRe    = /\/\/ @@BSC_DATA_BEGIN@@[\s\S]*?\/\/ @@BSC_DATA_END@@/;
+      if(bscRe.test(html)) html = html.replace(bscRe, bscBlock);
     }
 
-    // 3. Cập nhật badge ngày
+    // Bước 4: Cập nhật badge ngày
     if(IMP.date){
-      html = html.replace(/id=\"src-badge\"[^>]*>[^<]*/, 'id=\"src-badge\" class=\"data-badge badge-import\">\ud83d\udcc5 D\u1eef li\u1ec7u: '+IMP.date);
-      html = html.replace(/id=\"period-badge\">[^<]*/, 'id=\"period-badge\">'+DATA.length+' C\xe1n b\u1ed9');
+      html = html.replace(/id="src-badge"[^>]*>[^<]*/, 'id="src-badge" class="data-badge badge-import">📅 Dữ liệu: '+IMP.date);
+      html = html.replace(/id="period-badge">[^<]*/, 'id="period-badge">'+DATA.length+' Cán bộ');
     }
 
-    var result = await pushToGitHub(html);
-    if(prog){
-      prog.textContent = result.msg;
-      setTimeout(function(){ prog.textContent=''; prog.classList.remove('show'); }, 8000);
+    if(prog) prog.textContent = '⏳ Đang push lên GitHub...';
+
+    // Bước 5: Encode → push
+    var b64new = btoa(unescape(encodeURIComponent(html)));
+    var now    = new Date().toLocaleString('vi-VN');
+    var putResp = await fetch(apiBase, {
+      method:'PUT',
+      headers:{ 'Authorization':'token '+token, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+      body: JSON.stringify({ message:'Dashboard update '+now, content:b64new, sha:sha, branch:'main' })
+    });
+
+    if(putResp.ok || putResp.status===201){
+      var msg = '✅ Đã push lên GitHub! Pages cập nhật trong ~30 giây.';
+      if(prog){ prog.textContent=msg; setTimeout(function(){ prog.textContent=''; prog.classList.remove('show'); },8000); }
+    } else {
+      var err = await putResp.json();
+      throw new Error(err.message || putResp.status);
     }
   } catch(e){
-    if(prog){
-      prog.textContent = '⚠️ Auto-deploy lỗi: ' + e.message;
-      setTimeout(function(){ prog.textContent=''; prog.classList.remove('show'); }, 5000);
-    }
+    if(prog){ prog.textContent='⚠️ Lỗi: '+e.message; setTimeout(function(){ prog.textContent=''; prog.classList.remove('show'); },6000); }
+    console.error('[autoDeployToGitHub]', e);
   }
+}
+
+// Đẩy lên GitHub ngay (không cần Áp dụng CB)
+async function deployNow(){
+  var prog = document.getElementById('pdf-prog');
+  if(prog){ prog.classList.add('show'); prog.textContent = '⏳ Chuẩn bị...'; }
+  await autoDeployToGitHub();
 }
 
 
