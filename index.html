@@ -39,10 +39,30 @@ body{font-family:Arial,sans-serif;background:#EEF2F1;color:var(--text);font-size
 
 /* ── TABS ── */
 .tabs{background:#fff;border-bottom:3px solid var(--teal);display:flex;padding:0 16px;overflow-x:auto;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-.tab{padding:11px 18px;cursor:pointer;font-weight:600;font-size:12px;color:var(--gray);
-  border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap;transition:all .15s}
-.tab:hover{color:var(--teal)}
+.tabs{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:visible;background:#fff;border-bottom:2px solid var(--teal-m);position:relative}
+.tab{padding:11px 16px;cursor:pointer;font-weight:600;font-size:12px;color:var(--gray);
+  border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;
+  display:flex;align-items:center;gap:5px;user-select:none;position:relative}
+.tab:hover{color:var(--teal);background:var(--teal-l)}
 .tab.active{color:var(--teal);border-bottom-color:var(--teal);background:var(--teal-l)}
+/* Dropdown group */
+.tab-group{position:relative;display:flex;align-items:stretch}
+.tab-group-btn{padding:11px 16px;cursor:pointer;font-weight:600;font-size:12px;color:var(--gray);
+  border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;
+  display:flex;align-items:center;gap:5px;background:transparent;border-top:none;border-left:none;border-right:none;
+  font-family:inherit}
+.tab-group-btn:hover{color:var(--teal);background:var(--teal-l)}
+.tab-group-btn.has-active{color:var(--teal);border-bottom-color:var(--teal);background:var(--teal-l)}
+.tab-group-btn .caret{font-size:9px;opacity:.6;margin-left:2px;transition:transform .15s}
+.tab-group.open .caret{transform:rotate(180deg)}
+.tab-dropdown{display:none;position:absolute;top:100%;left:0;min-width:160px;background:#fff;
+  border:1px solid var(--border);border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,.1);
+  z-index:200;margin-top:2px}
+.tab-group.open .tab-dropdown{display:block}
+.tab-dropdown .tab-item{display:block;padding:10px 16px;font-size:12px;font-weight:600;color:var(--gray);
+  cursor:pointer;white-space:nowrap;transition:all .1s}
+.tab-dropdown .tab-item:hover{color:var(--teal);background:var(--teal-l)}
+.tab-dropdown .tab-item.active{color:var(--teal);background:var(--teal-l)}
 .tab-panel{display:none}.tab-panel.active{display:block}
 
 /* ── CONTENT ── */
@@ -207,17 +227,43 @@ canvas{max-height:260px}
 </div>
 
 <!-- TABS -->
-<div class="tabs">
-  <div class="tab active" onclick="gTab('tq',this)">📊 Tổng Quan</div>
-  <div class="tab" onclick="gTab('ld',this)">👑 Lãnh Đạo</div>
-  <div class="tab" onclick="gTab('cb',this)">👤 Cán Bộ</div>
-  <div class="tab" onclick="gTab('kv',this)">📈 Khoản Vay</div>
-  <div class="tab" onclick="gTab('ss',this)">⚖️ So Sánh</div>
-  <div class="tab" onclick="gTab('bieu',this)">📉 Biểu Đồ</div>
-  <div class="tab" onclick="gTab('bsc',this)">📋 BSC</div>
-  <div class="tab" onclick="gTab('kh',this)">🎯 Kế hoạch</div>
-  <div class="tab" onclick="gTab('ql',this)">⚙️ Quản lý CB</div>
-  <div class="tab" onclick="gTab('imp',this)">🔄 Import</div>
+<div class="tabs" id="main-tabs">
+  <div class="tab active" onclick="gTab('tq',this)" data-tab="tq">📊 Tổng Quan</div>
+
+  <div class="tab-group" id="grp-canbo">
+    <button class="tab-group-btn" onclick="toggleGroup('grp-canbo',event)">
+      👥 Cán bộ <span class="caret">▼</span>
+    </button>
+    <div class="tab-dropdown">
+      <div class="tab-item" onclick="gTabGroup('ld','grp-canbo',this,event)" data-tab="ld">👑 Lãnh Đạo</div>
+      <div class="tab-item" onclick="gTabGroup('cb','grp-canbo',this,event)" data-tab="cb">👤 Cán Bộ CM</div>
+      <div class="tab-item" onclick="gTabGroup('kv','grp-canbo',this,event)" data-tab="kv">📈 Khoản Vay</div>
+      <div class="tab-item" onclick="gTabGroup('ss','grp-canbo',this,event)" data-tab="ss">⚖️ So Sánh</div>
+      <div class="tab-item" onclick="gTabGroup('bieu','grp-canbo',this,event)" data-tab="bieu">📉 Biểu Đồ</div>
+    </div>
+  </div>
+
+  <div class="tab-group" id="grp-bsc">
+    <button class="tab-group-btn" onclick="toggleGroup('grp-bsc',event)">
+      📋 BSC <span class="caret">▼</span>
+    </button>
+    <div class="tab-dropdown">
+      <div class="tab-item" onclick="gTabGroup('bsc','grp-bsc',this,event);bscScrollTo('khoi')" data-tab="bsc" data-section="khoi">📊 BSC Khối</div>
+      <div class="tab-item" onclick="gTabGroup('bsc','grp-bsc',this,event);bscScrollTo('donvi')" data-tab="bsc" data-section="donvi">🏢 BSC Các đơn vị</div>
+    </div>
+  </div>
+
+  <div class="tab" onclick="gTab('kh',this)" data-tab="kh">🎯 Kế hoạch</div>
+
+  <div class="tab-group" id="grp-caidat">
+    <button class="tab-group-btn" onclick="toggleGroup('grp-caidat',event)">
+      ⚙️ Cài đặt <span class="caret">▼</span>
+    </button>
+    <div class="tab-dropdown">
+      <div class="tab-item" onclick="gTabGroup('ql','grp-caidat',this,event)" data-tab="ql">👤 Quản lý CB</div>
+      <div class="tab-item" onclick="gTabGroup('imp','grp-caidat',this,event)" data-tab="imp">🔄 Import &amp; Đồng bộ</div>
+    </div>
+  </div>
 </div>
 
 <div class="content">
@@ -816,6 +862,59 @@ function hiliteBench(btn) {
 // ── TAB SWITCH ────────────────────────────────────────────────
 let bieuRendered = false;
 let currentTabId = 'tq';
+
+// Đóng tất cả dropdown
+function closeAllGroups(except){
+  document.querySelectorAll('.tab-group.open').forEach(function(g){
+    if(g.id !== except) g.classList.remove('open');
+  });
+}
+
+// Toggle dropdown group
+function toggleGroup(groupId, evt){
+  if(evt) evt.stopPropagation();
+  var g = document.getElementById(groupId);
+  var wasOpen = g.classList.contains('open');
+  closeAllGroups(null);
+  if(!wasOpen) g.classList.add('open');
+}
+
+// Click item trong dropdown
+function gTabGroup(id, groupId, el, evt){
+  if(evt) evt.stopPropagation();
+  closeAllGroups(null);
+  // Bỏ active tất cả tab và tab-item
+  document.querySelectorAll('.tab,.tab-item').forEach(function(t){ t.classList.remove('active'); });
+  // Active item được click
+  if(el) el.classList.add('active');
+  // Highlight group button
+  var grp = document.getElementById(groupId);
+  if(grp) grp.querySelector('.tab-group-btn').classList.add('has-active');
+  // Reset các group button khác
+  document.querySelectorAll('.tab-group-btn').forEach(function(b){
+    if(b.closest('.tab-group').id !== groupId) b.classList.remove('has-active');
+  });
+  // Bỏ active tab đơn
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  // Gọi gTab để render
+  gTab(id, null);
+}
+
+// Scroll đến section trong BSC tab
+function bscScrollTo(section){
+  setTimeout(function(){
+    var el = section==='khoi'
+      ? document.querySelector('#tab-bsc .sec-title')
+      : document.getElementById('tbl-bsc-donvi');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+}
+
+// Đóng dropdown khi click ngoài
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.tab-group')) closeAllGroups(null);
+});
+
 function gTab(id, el) {
   // Use style.display directly — immune to CSS cascade / !important bleed
   document.querySelectorAll('.tab-panel').forEach(function(p) {
@@ -825,7 +924,8 @@ function gTab(id, el) {
   var panel = document.getElementById('tab-'+id);
   if (panel) { panel.style.display = 'block'; panel.classList.add('active'); }
   if (el) {
-    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.tab,.tab-item').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.tab-group-btn').forEach(function(b){ b.classList.remove('has-active'); });
     el.classList.add('active');
   }
   // Re-render mỗi khi switch tab — đảm bảo luôn fresh, tránh stale content
